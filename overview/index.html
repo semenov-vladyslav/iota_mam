@@ -149,6 +149,99 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
+<p>The IOTA Streams framework is intended to be a secure message verification and protection protocol 
+for sending data over a given transport layer. </p>
+<p>The Channels Protocol is designed as a replacement for the previously used MAM library for sending 
+data using the tangle as the primary transportation mechanism. The channels themselves can be 
+structured in a number of ways with any arbitrary combination of Publishers and Readers (although 
+each channel can only be hosted by a single <code>Author</code> instance)</p>
+<h1 id="channels-protocol"><a class="header" href="#channels-protocol">Channels Protocol</a></h1>
+<p>The channels protocol provides the high level api tools necessary for Authors and Subscribers to be 
+generated and interact with the tangle. </p>
+<h2 id="authors"><a class="header" href="#authors">Authors</a></h2>
+<p>A channel <code>Author</code> is responsible for the generation of a new channel along with the configuration of the 
+intended structure of that channel (i.e <code>single branch</code> vs <code>multi branch</code>). An <code>Author</code> of a channel will be 
+able to set the access restrictions to branches within a channel structure, as well as accepting and 
+managing user Subscription messages. </p>
+<h2 id="subscribers"><a class="header" href="#subscribers">Subscribers</a></h2>
+<p>A channel <code>Subscriber</code> is any user within a channel that is not the Author. A subscriber can be generated
+independently without verification by an <code>Author</code>, but in order to write to a branch, or to process any 
+private streams, they will be required to subscribe to the channel, and have the Author accept/process 
+that subscription. A Subscriber may also use Pre-Shared Keys instead of subscription as a method of 
+interacting with a stream without conducting a subscription process. </p>
+<h2 id="branching"><a class="header" href="#branching">Branching</a></h2>
+<p>Branches can be defined as any sequential grouping of messages that is spawned linked to the <code>Announcement</code> 
+message. These branches will typically be generated with either a <code>signed packet</code> or <code>keyload</code> message for 
+public and private streaming respectively. A channel can assume two different forms: </p>
+<ul>
+<li><code>single branch</code> - A linear sequencing of messages (similar to a <code>MAM</code> stream) with each message linked to 
+the previous one </li>
+<li><code>multi branch</code> - A sequencing of messages that does not rely on sequential linking of messages</li>
+</ul>
+<p>When generating a channel, the Author will decide whether the channel will use single branching or multi-
+branching, this will inform the Streams instance in which way it should perform sequencing. Subscribers will 
+also be informed as they process the root message (<code>Announcement</code>) so their instances know the appropriate 
+sequencing order as well.</p>
+<h2 id="keyloads"><a class="header" href="#keyloads">Keyloads</a></h2>
+<p>A <code>Keyload</code> message is an access restriction/control message that allows the Author to specify who should be 
+able to decrypt any messages that are attached following it. There are two ways to specify access when generating 
+a <code>Keyload</code>: </p>
+<ul>
+<li>Subscriber Public Keys</li>
+<li>Pre-shared Keys </li>
+</ul>
+<h4 id="public-keys"><a class="header" href="#public-keys">Public Keys</a></h4>
+<p>During the processing of subscription messages, public keys are masked and provided to the Author to be stored on 
+their instance. That Author can then specify which of these users will be able to access subsequent messages by 
+including that public key in the <code>Keyload</code>.</p>
+<h4 id="pre-shared-keys-pkis"><a class="header" href="#pre-shared-keys-pkis">Pre-Shared Keys (PKI's)</a></h4>
+<p>A predefined key shared amongst users offline. These keys can be used to provide access restrictions to a stream 
+without the need for a subscription process. </p>
+<p><em><em>Note: The security and transportation of this offline key must be ensured by the user implementations</em></em></p>
+<h2 id="sequencing"><a class="header" href="#sequencing">Sequencing</a></h2>
+<p>Sequencing is the methodology built within streams to allow message identifiers to be sequentially generated regardless 
+of the shape of the channel. Messages are identified by an <code>indexation</code> position within the tangle, and they are 
+generated using a combination of these pieces of information:</p>
+<ul>
+<li>Application Instance (Channel Identifier)</li>
+<li>Public Key (Of the sender)</li>
+<li>Previous message id (The message being linked to)</li>
+<li>Branch No (Identifier for the specific branch)</li>
+<li>Sequencing Number (The sequencing position of the sender)</li>
+</ul>
+<p>As messages are posted to/read from the channel, a local state for the user implementation will update with the message 
+identifier, branch and sequencing numbers for each publishing party. This allows user implementations to derive and 
+search for the next message in the sequence to keep in sync. </p>
+<h4 id="single-branch-sequencing"><a class="header" href="#single-branch-sequencing">Single Branch Sequencing</a></h4>
+<p>In a single branch implementation, each user's sequencing state will be updated to the same state. This means that 
+regardless of th sender, each publisher's state will update the Previous Message Id to the new message link, and the 
+Sequencing Number will be incremented by one. </p>
+<p>Sequence states before Msg1 is sent:</p>
+<pre><code>               Author        Sub1
+Prev Msg Id     Msg0         Msg0 
+Branch No.        0            0
+Seq. No.          2            2       &lt;- Users start from 2, 0 and 1 are reserved for subscriptions and announcements
+</code></pre>
+<p>Msg1 is then sent by Author using the above stated author state...</p>
+<p>Sequence states after Msg1 is sent:</p>
+<pre><code>               Author        Sub1
+Prev Msg Id     Msg1         Msg1 
+Branch No.        0            0
+Seq. No.          3            3     
+</code></pre>
+<p><strong><em>Note:</em></strong> <em>It is recommended that a single branch be used with only a single publisher to avoid out of sync parties from 
+issuing/retrieving messages from an incorrect sequencing combination (i.e. Sub1 sends a message linked to Msg1 and Sub2 
+sends a message linked to that same Msg1 before seeing and registering the message from Sub1, thus forking the stream). 
+Multiple publishers can be used, but it is important to ensure that they do not try to send messages in parallel to 
+avoid this conflict. In the future this may be an enforced limitation on single branch implementations to remove the 
+possibility altogether.</em></p>
+<h4 id="multi-branch-sequencing"><a class="header" href="#multi-branch-sequencing">Multi Branch Sequencing</a></h4>
+<p>In a multi branch implementation, each user's sequencing state will be updated independently after each message is sent. 
+In order to track the individual publisher's linking of messages within a tree-like structure, a secondary message is 
+sent in tandem with every data message. This message is called a sequencing message, and contains the essence necessary 
+for a user to derive the correct message id of a sequenced message. The sequencing messages are issued to an anchored 
+branch generated during the creation of the channel. As a new message is generated by a user, a sequencing message is
+issued to this anchored branch to allow users a reference guide to the location of the issued data packet. </p>
 
                     </main>
 

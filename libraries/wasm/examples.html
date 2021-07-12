@@ -149,6 +149,107 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<p>An overview example of the available api tools can be found <a href="../../../bindings/wasm/examples/node.js">here</a>.
+The general API is simply an abstraction over the rust library, so the examples found 
+<a href="../rust/examples.html">here</a> still apply (with some minor modifications, see: <a href="api_reference.html">api_reference</a>)</p>
+<h2 id="core-functionality"><a class="header" href="#core-functionality">Core Functionality</a></h2>
+<h3 id="author-generation"><a class="header" href="#author-generation">Author Generation</a></h3>
+<p>Create an Author and generate a new channel:</p>
+<pre><code class="language-javascript">let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
+let options = new streams.SendOptions(node, 3, true, 1);
+let multi_branching = false;
+let auth = new streams.Author(&quot;Unique Seed&quot;, options, multi_branching);
+
+let response = await auth.clone().send_announce();
+let ann_link = response.get_link();
+// Link used by subscribers to attach to instance
+console.log(&quot;Announced at: &quot;, ann_link.to_string());
+</code></pre>
+<h3 id="subscriber-generation"><a class="header" href="#subscriber-generation">Subscriber Generation</a></h3>
+<p>Create a Subscriber and attach to a channel:</p>
+<pre><code class="language-javascript">let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
+let options = new streams.SendOptions(node, 3, true, 1);
+let sub = new streams.Subscriber(&quot;Unique Seed&quot;, options);
+
+let ann_link = streams.Address.from_str(&quot;AnnouncementLink:Here&quot;);
+await sub.clone().receive_announcement();
+</code></pre>
+<h3 id="subscription"><a class="header" href="#subscription">Subscription</a></h3>
+<p>Subscriber sends a subscription message:</p>
+<pre><code class="language-javascript">let response = sub.clone().send_subscribe(ann_link);
+let sub_link = response.get_link();
+// Link to be provided to the Author for subscription
+console.log(&quot;Subscription link: &quot;, sub_link.to_string());
+</code></pre>
+<p>Author accepts and processes subscription: </p>
+<pre><code class="language-javascript">let sub_link = streams.Address.from_str(&quot;SubLink:Here&quot;);
+await author.clone().receive_subscribe(sub_link);
+</code></pre>
+<h3 id="keyload"><a class="header" href="#keyload">Keyload</a></h3>
+<p>Author sends a keyload for all participants in the channel:</p>
+<pre><code class="language-javascript">let response = author.clone().send_keyload_for_everyone(ann_link);
+let keyload_link = response.get_link();
+// Keyload message can now act as starting point for a protected branch
+console.log(&quot;Keyload link for everyone: &quot;, keyload_link.to_string());
+</code></pre>
+<p>Author sends a keyload for just one subscriber in the channel:</p>
+<pre><code class="language-javascript">let response = author.clone().send_keyload(ann_link, [], [&quot;SubA_PublicKey&quot;]);
+let sub_A_keyload_link = response.get_link();
+// Keyload message can now act as starting point for a protected branch
+console.log(&quot;Keyload link for SubA: &quot;, sub_A_keyload_link.to_string());
+</code></pre>
+<h3 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h3>
+<p>Messages are required to be linked to a previous message that the user had access to. 
+In a single branch implementation this means the latest message in the branch, in multi
+branch implementations, this can mean any message in a branch that they have had access 
+to.</p>
+<p><em>Note: In a multi publisher implementation (i.e. multiple publishers in a single branch),
+it is required that each publisher make sure to sync their state before publishing to ensure 
+that the instance stays in sync with the other publishers</em></p>
+<pre><code class="language-javascript">await sub.clone().sync_state();
+let masked_payload = to_bytes(&quot;Masked Payload&quot;) &lt;- Payloads must be converted to bytes
+let public_payload = to_bytes(&quot;Public Payload&quot;)
+
+let response = subA.clone().send_signed_packet(
+    sub_A_keyload_link,
+    public_payload,
+    masked_payload
+);
+let msg_link = resposne.get_link();
+console.log(&quot;New message sent by Sub A at: &quot;, msg_link.to_string());
+</code></pre>
+<h3 id="message-fetching"><a class="header" href="#message-fetching">Message Fetching</a></h3>
+<h4 id="forward"><a class="header" href="#forward">Forward</a></h4>
+<p>When new messages are available to retrieve from the channel, you can fetch the next 
+message sent by each publisher like so:</p>
+<pre><code class="language-javascript">let next_msgs = sub.clone().fetch_next_msgs();
+
+for (var i = 0; i &lt; next_msgs.length; i++) {
+    console.log(&quot;Found a message...&quot;);
+    console.log(
+      &quot;Public: &quot;,
+      from_bytes(next_msgs[i].get_message().get_public_payload()),
+      &quot;\tMasked: &quot;,
+      from_bytes(next_msgs[i].get_message().get_masked_payload())
+    );
+}
+</code></pre>
+<p>If no new messages are present, the returned array will be empty.</p>
+<p>You can also fetch all previous messages:</p>
+<h4 id="backwards"><a class="header" href="#backwards">Backwards</a></h4>
+<pre><code class="language-javascript">let num_messages = 10;
+let prev_msgs = sub.clone().fetch_prev_msgs(latest_msg_link, num_messages);
+
+for (var i = 0; i &lt; prev_msgs.length; i++) {
+    console.log(&quot;Found a message...&quot;);
+    console.log(
+      &quot;Public: &quot;,
+      from_bytes(prev_msgs[i].get_message().get_public_payload()),
+      &quot;\tMasked: &quot;,
+      from_bytes(prev_msgs[i].get_message().get_masked_payload())
+    );
+}
+</code></pre>
 
                     </main>
 

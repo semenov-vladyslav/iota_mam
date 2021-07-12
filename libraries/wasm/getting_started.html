@@ -149,6 +149,35 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>The WASM bindings allow for you to build a Streams API for web applications and nodejs. 
+The streams instance underlying the bindings is built with the <code>wasm-client</code> flag to 
+ensure a compatible client interface using the <code>iota.rs iota-client</code> crate. </p>
+<p>Before building anything you'll need to make sure you have <code>npm</code> installed on your 
+machine.</p>
+<p>To build the library, first make sure you're in the wasm directory:
+<code>cd bindings/wasm</code> and run <code>npm install</code> to sync up your dependencies. </p>
+<p>For building the nodejs compatible api, run:</p>
+<pre><code class="language-bash">npm run build:node  &lt;- Builds to wasm-node/iota_streams_wasm
+</code></pre>
+<p>And for building the web compatible api, run:</p>
+<pre><code class="language-bash">npm run build:web  &lt;- Builds to wasm-web/iota_streams_wasm
+</code></pre>
+<h3 id="starting-a-channel"><a class="header" href="#starting-a-channel">Starting a Channel</a></h3>
+<p>Once the package has been built, you can pull it into a script file like so: </p>
+<pre><code class="language-javascript">const streams = require(&quot;./wasm-node/iota_streams_wasm&quot;);
+
+let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
+// Options include: (node-url, depth, local pow, # of threads)
+let options = new streams.SendOptions(node, 3, true, 1);
+
+// Author generated with: (Seed, Options, Multi-branching flag)
+let auth = new streams.Author(&quot;Unique Seed Here&quot;, options, false);
+
+// Response formatting: { link, sequence link, msg }
+let response = await auth.clone().send_announce();
+let ann_link = response.get_link();
+console.log(&quot;Channel Announcement at: &quot;, ann_link.to_string());
+</code></pre>
 
                     </main>
 

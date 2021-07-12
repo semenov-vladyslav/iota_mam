@@ -149,6 +149,13 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
+<p>Users are broken down into two types: <code>Author</code> and <code>Subscriber</code>. An <code>Author</code> is the user 
+that generates the channel, accepts subscription requests and can perform access granting 
+and restriction methods. A <code>Subscriber</code> is an instance that can attach to a channel to read 
+from and write to depending on the access privileges they've been granted. </p>
+<p>You can generate the api reference with:</p>
+<pre><code>cargo doc --document
+</code></pre>
 
                     </main>
 

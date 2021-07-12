@@ -149,6 +149,468 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
+<h2 id="contents"><a class="header" href="#contents">Contents</a></h2>
+<p>The API is spread out across three categories: </p>
+<ul>
+<li><a href="#Author">Author</a></li>
+<li><a href="#Subscriber">Subscriber</a></li>
+<li><a href="#Types">Types</a></li>
+</ul>
+<h3 id="author"><a class="header" href="#author">Author</a></h3>
+<p>Main user implementation of a Channel. Generates the channel, processes subscriptions 
+and </p>
+<h4 id="newseed-options-multi_branching-author"><a class="header" href="#newseed-options-multi_branching-author">new(seed, options, multi_branching): Author</a></h4>
+<p>Generates an Author instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td>options</td><td><code>SendOptions</code></td><td>Options for Client</td></tr>
+<tr><td>multi_branching</td><td><code>bool</code></td><td>Channel Type</td></tr>
+<tr><td><strong>Returns:</strong> An Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_clientclient-seed-multi_branching-author"><a class="header" href="#from_clientclient-seed-multi_branching-author">from_client(client, seed, multi_branching): Author</a></h4>
+<p>Create an Author instance from a client</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td>multi_branching</td><td><code>bool</code></td><td>Channel Type</td></tr>
+<tr><td><strong>Returns:</strong> An Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="importclient-bytes-password-author"><a class="header" href="#importclient-bytes-password-author">import(client, bytes, password): Author</a></h4>
+<p>Import an Author instance from an encrypted binary array</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>bytes</td><td><code>Uint8Array</code></td><td>Exported binary of author</td></tr>
+<tr><td>password</td><td><code>string</code></td><td>Key to decrypt binary</td></tr>
+<tr><td><strong>Returns:</strong> A recovered Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="exportpassword-uint8array"><a class="header" href="#exportpassword-uint8array">export(password): Uint8Array</a></h4>
+<p>Export an Author instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>password</td><td><code>string</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Binary array representing an encrypted state of the author.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="clone-author"><a class="header" href="#clone-author">clone(): Author</a></h4>
+<p>Generate a copy of the Author instance for consumption by asynchronous functions</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A consumable Author instance for functions.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="channel_address-string"><a class="header" href="#channel_address-string">channel_address(): string</a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Channel Address for user generated channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="is_multi_branching-bool"><a class="header" href="#is_multi_branching-bool">is_multi_branching(): bool</a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Boolean representing the channel type: false=single branch, true=multi branch.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_public_key-string"><a class="header" href="#get_public_key-string">get_public_key(): string</a></h4>
+<p>Retrieve the Author public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Author public key in hex representation.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="the-following-functions-require-authorclone-to-use-as-they-consume-the-instance"><a class="header" href="#the-following-functions-require-authorclone-to-use-as-they-consume-the-instance">The following functions require author.clone() to use, as they consume the instance</a></h4>
+<h4 id="async---send_announce-a-hrefuserresponseuserresponsea"><a class="header" href="#async---send_announce-a-hrefuserresponseuserresponsea"><em>async -</em> send_announce(): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send an announcement message, initialising the channel </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the announcement message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_keyload_for_everyonelink-a-hrefuserresponseuserresponsea"><a class="header" href="#async---send_keyload_for_everyonelink-a-hrefuserresponseuserresponsea"><em>async -</em> send_keyload_for_everyone(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a keyload message for all subscribed participants in the channel, linked to a previous message 
+(usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the keyload message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_keyloadlink-psk_ids-sig_pks-a-hrefuserresponseuserresponsea"><a class="header" href="#async---send_keyloadlink-psk_ids-sig_pks-a-hrefuserresponseuserresponsea"><em>async -</em> send_keyload(link, psk_ids, sig_pks): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a keyload message for specified subscribers and pre shared keys in the channel, linked to a previous 
+message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>psk_ids</td><td><a href="#PskIds"><code>PskIds</code></a></td><td>Array of PskId's for included subscribers</td></tr>
+<tr><td>sig_pks</td><td><a href="#PublicKeys"><code>PublicKeys</code></a></td><td>Array of Public Keys for included subscribers</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the keyload message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_tagged_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea"><a class="header" href="#async---send_tagged_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea"><em>async -</em> send_tagged_packet(link, public_payload, masked_payload): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a tagged packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_signed_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea"><a class="header" href="#async---send_signed_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea"><em>async -</em> send_signed_packet(link, public_payload, masked_payload): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a signed packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_subscribelink"><a class="header" href="#async---receive_subscribelink"><em>async -</em> receive_subscribe(link)</a></h4>
+<p>Process a subscription message by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of subscription message</td></tr>
+</tbody></table>
+<h4 id="async---receive_tagged_packetlink-a-hrefuserresponseuserresponsea"><a class="header" href="#async---receive_tagged_packetlink-a-hrefuserresponseuserresponsea"><em>async -</em> receive_tagged_packet(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_signed_packetlink-a-hrefuserresponseuserresponsea"><a class="header" href="#async---receive_signed_packetlink-a-hrefuserresponseuserresponsea"><em>async -</em> receive_signed_packet(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_sequencelink-a-hrefaddressaddressa"><a class="header" href="#async---receive_sequencelink-a-hrefaddressaddressa"><em>async -</em> receive_sequence(link): <a href="#Address">Address</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> The address link of the sequenced message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_msglink-a-hrefuserresponseuserresponsea"><a class="header" href="#async---receive_msglink-a-hrefuserresponseuserresponsea"><em>async -</em> receive_msg(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of the message to be fetched</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---sync_state"><a class="header" href="#async---sync_state"><em>async -</em> sync_state()</a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the user state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+</tbody></table>
+<h4 id="async---fetch_next_msgs-arraya-hrefuserresponseuserresponsea"><a class="header" href="#async---fetch_next_msgs-arraya-hrefuserresponseuserresponsea"><em>async -</em> fetch_next_msgs(): Array&lt;<a href="#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---gen_next_msg_ids-arraya-hrefnextmsgidnextmsgida"><a class="header" href="#async---gen_next_msg_ids-arraya-hrefnextmsgidnextmsgida"><em>async -</em> gen_next_msg_ids(): Array&lt;<a href="#NextMsgId">NextMsgId</a>&gt;</a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of NextMsgId wrappers for each publisher in the channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="store_pskpsk-string"><a class="header" href="#store_pskpsk-string">store_psk(psk): String</a></h4>
+<p>Store a Pre Shared Key (Psk) and retrieve the Pre Shared Key Id (PskId) for use in keyload messages 
+| Param           | Type                          | Description                         |
+| --------------- | ----------------------------- | ----------------------------------- |
+| psk             | String                        | Pre shared key in string format     |</p>
+<p><strong>Returns:</strong> A PskId String representing the Psk in store.</p>
+<h3 id="subscriber"><a class="header" href="#subscriber">Subscriber</a></h3>
+<p>Additional user implementations of a Channel. Can publish and read from public branches, and 
+branches that have been restricted by keyload messages that contain their public key. </p>
+<h4 id="newseed-options-subscriber"><a class="header" href="#newseed-options-subscriber">new(seed, options): Subscriber</a></h4>
+<p>Generates a Subscriber instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td>options</td><td><code>SendOptions</code></td><td>Options for Client</td></tr>
+<tr><td><strong>Returns:</strong> A Subscriber instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_clientclient-seed-subscriber"><a class="header" href="#from_clientclient-seed-subscriber">from_client(client, seed): Subscriber</a></h4>
+<p>Create a Subscriber instance from a client</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td><strong>Returns:</strong> A Subscriber instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="importclient-bytes-password-subscriber"><a class="header" href="#importclient-bytes-password-subscriber">import(client, bytes, password): Subscriber</a></h4>
+<p>Import a Subscriber instance from an encrypted binary array</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>bytes</td><td><code>Uint8Array</code></td><td>Exported binary of author</td></tr>
+<tr><td>password</td><td><code>string</code></td><td>Key to decrypt binary</td></tr>
+<tr><td><strong>Returns:</strong> A recovered Subscriber instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="exportpassword-uint8array-1"><a class="header" href="#exportpassword-uint8array-1">export(password): Uint8Array</a></h4>
+<p>Export a Subscriber instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>password</td><td><code>string</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Binary array representing an encrypted state of the subscriber.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="clone-subscriber"><a class="header" href="#clone-subscriber">clone(): Subscriber</a></h4>
+<p>Generate a copy of the Subscriber instance for consumption by asynchronous functions</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A consumable Subscriber instance for functions.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="channel_address-string-1"><a class="header" href="#channel_address-string-1">channel_address(): string</a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Channel Address for user generated channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="is_multi_branching-bool-1"><a class="header" href="#is_multi_branching-bool-1">is_multi_branching(): bool</a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Boolean representing the channel type: false=single branch, true=multi branch.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_public_key-string-1"><a class="header" href="#get_public_key-string-1">get_public_key(): string</a></h4>
+<p>Retrieve the Subscriber public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Subscriber public key in hex representation.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="is_registered-bool"><a class="header" href="#is_registered-bool">is_registered(): bool</a></h4>
+<p>Check if the subscriber instance has processed a channel announcement. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Boolean representing if the subscriber instance has processed a channel announcement correctly.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="unregister"><a class="header" href="#unregister">unregister()</a></h4>
+<p>Unregister a subscriber instance from a channel. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+</tbody></table>
+<h4 id="the-following-functions-require-subscriberclone-to-use-as-they-consume-the-instance"><a class="header" href="#the-following-functions-require-subscriberclone-to-use-as-they-consume-the-instance">The following functions require subscriber.clone() to use, as they consume the instance</a></h4>
+<h4 id="async---send_subscribelink-a-hrefuserresponseuserresponsea"><a class="header" href="#async---send_subscribelink-a-hrefuserresponseuserresponsea"><em>async -</em> send_subscribe(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a subscription message attached to an announcement message link. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of announcement message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the subscribe message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_tagged_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea-1"><a class="header" href="#async---send_tagged_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea-1"><em>async -</em> send_tagged_packet(link, public_payload, masked_payload): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a tagged packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_signed_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea-1"><a class="header" href="#async---send_signed_packetlink-public_payload-masked_payload-a-hrefuserresponseuserresponsea-1"><em>async -</em> send_signed_packet(link, public_payload, masked_payload): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Send a signed packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_announcementlink"><a class="header" href="#async---receive_announcementlink"><em>async -</em> receive_announcement(link)</a></h4>
+<p>Process an announcement message and register the channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of the announcement message</td></tr>
+</tbody></table>
+<h4 id="async---receive_keyloadlink-bool"><a class="header" href="#async---receive_keyloadlink-bool"><em>async -</em> receive_keyload(link): bool</a></h4>
+<p>Receive a keyload by its link and return whether the subscriber has access beyond it or not.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> Boolean representing access to the branch.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_tagged_packetlink-a-hrefuserresponseuserresponsea-1"><a class="header" href="#async---receive_tagged_packetlink-a-hrefuserresponseuserresponsea-1"><em>async -</em> receive_tagged_packet(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_signed_packetlink-a-hrefuserresponseuserresponsea-1"><a class="header" href="#async---receive_signed_packetlink-a-hrefuserresponseuserresponsea-1"><em>async -</em> receive_signed_packet(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_sequencelink-a-hrefaddressaddressa-1"><a class="header" href="#async---receive_sequencelink-a-hrefaddressaddressa-1"><em>async -</em> receive_sequence(link): <a href="#Address">Address</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> The address link of the sequenced message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_msglink-a-hrefuserresponseuserresponsea-1"><a class="header" href="#async---receive_msglink-a-hrefuserresponseuserresponsea-1"><em>async -</em> receive_msg(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address of the message to be fetched</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---sync_state-1"><a class="header" href="#async---sync_state-1"><em>async -</em> sync_state()</a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the user state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+</tbody></table>
+<h4 id="async---fetch_next_msgs-arraya-hrefuserresponseuserresponsea-1"><a class="header" href="#async---fetch_next_msgs-arraya-hrefuserresponseuserresponsea-1"><em>async -</em> fetch_next_msgs(): Array&lt;<a href="#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="store_pskpsk-string-1"><a class="header" href="#store_pskpsk-string-1">store_psk(psk): String</a></h4>
+<p>Store a Pre Shared Key (Psk) and retrieve the Pre Shared Key Id (PskId) for use in keyload messages 
+| Param           | Type                          | Description                         |
+| --------------- | ----------------------------- | ----------------------------------- |
+| psk             | String                        | Pre shared key in string format     |</p>
+<p><strong>Returns:</strong> A PskId String representing the Psk in store.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
+<p>Generic Types and Primitives used in Wasm API:</p>
+<ul>
+<li><a href="#Client">Client</a></li>
+<li><a href="#SendOptions">SendOptions</a></li>
+<li><a href="#UserResponse">UserResponse</a></li>
+<li><a href="#Address">Address</a></li>
+<li><a href="#Message">Message</a></li>
+<li><a href="#NextMsgId">NextMsgId</a></li>
+</ul>
+<h3 id="client"><a class="header" href="#client">Client</a></h3>
+<p>Transport client for interacting with an Iota node.</p>
+<h4 id="newnode-options-client"><a class="header" href="#newnode-options-client">new(node, options): Client</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>node</td><td><code>string</code></td><td>A node URL</td></tr>
+<tr><td>options</td><td><code>SendOptions</code></td><td>Options for Client</td></tr>
+<tr><td><strong>Returns:</strong> A client instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="sendoptions"><a class="header" href="#sendoptions">SendOptions</a></h3>
+<p>Options for a transport client</p>
+<h4 id="newurl-depth-local_pow-threads-sendoptions"><a class="header" href="#newurl-depth-local_pow-threads-sendoptions">new(url, depth, local_pow, threads): SendOptions</a></h4>
+<p>Create a new set of Send Options for the client</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>url</td><td><code>string</code></td><td>A node URL</td></tr>
+<tr><td>depth</td><td><code>number</code></td><td>Tangle depth for attachment</td></tr>
+<tr><td>local_pow</td><td><code>bool</code></td><td>Perform pow locally</td></tr>
+<tr><td>threads</td><td><code>number</code></td><td>Number of threads for client</td></tr>
+<tr><td><strong>Returns:</strong> Send Options for a client instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="userresponse"><a class="header" href="#userresponse">UserResponse</a></h3>
+<p>Response structure containing the details of a sent or retrieved message </p>
+<h4 id="newlink-seq_link-message-userresponse"><a class="header" href="#newlink-seq_link-message-userresponse">new(link, seq_link, message): UserResponse</a></h4>
+<p>Create a new User Response from the return of the rust api for sending and receiving messages.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>Address</code></a></td><td>Address link of message</td></tr>
+<tr><td>seq_link</td><td><a href="#Address"><code>Address</code></a></td><td>Sequence Address Link (can be undefined)</td></tr>
+<tr><td>message</td><td><a href="#Message"><code>Message</code></a></td><td>Sent or retrieved message (can be undefined)</td></tr>
+<tr><td><strong>Returns:</strong> User Response containing links and message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_stringslink-seq_link-message-userresponse"><a class="header" href="#from_stringslink-seq_link-message-userresponse">from_strings(link, seq_link, message): UserResponse</a></h4>
+<p>Create a new User Response from the return of the rust api for sending and receiving messages, 
+using strings for the link and seq_link inputs.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><code>string</code></td><td>Address string of message</td></tr>
+<tr><td>seq_link</td><td><code>string</code></td><td>Sequence Address string (can be undefined)</td></tr>
+<tr><td>message</td><td><a href="#Message"><code>Message</code></a></td><td>Sent or retrieved message (can be undefined)</td></tr>
+<tr><td><strong>Returns:</strong> User Response containing links and message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="copy-userresponse"><a class="header" href="#copy-userresponse">copy(): UserResponse</a></h4>
+<p>Create a copy of the User Response</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A copy of the User Response.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_link-a-hrefaddressaddressa"><a class="header" href="#get_link-a-hrefaddressaddressa">get_link(): <a href="#Address">Address</a></a></h4>
+<p>Fetch the link of the retrieved or sent message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The link for the retrieved or sent message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_seq_link-a-hrefaddressaddressa"><a class="header" href="#get_seq_link-a-hrefaddressaddressa">get_seq_link(): <a href="#Address">Address</a></a></h4>
+<p>Fetch the sequence link of the retrieved or sent message (Default if there is none).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The link for the retrieved or sent message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_message-a-hrefmessagemessagea"><a class="header" href="#get_message-a-hrefmessagemessagea">get_message(): <a href="#Message">Message</a></a></h4>
+<p>Fetch the retrieved or sent message (Default if there is none).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The retrieved or sent message.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="address"><a class="header" href="#address">Address</a></h3>
+<p>Streams Address containing the Application Instance and Message Id </p>
+<h4 id="set_addr_idaddr_id"><a class="header" href="#set_addr_idaddr_id">set_addr_id(addr_id)</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr_id</td><td><code>string</code></td><td>Application instance of the channel</td></tr>
+</tbody></table>
+<h4 id="addr_id-string"><a class="header" href="#addr_id-string">addr_id(): string</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Channel Identifier/Application Instance of the Address</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="set_msg_idmsg_id"><a class="header" href="#set_msg_idmsg_id">set_msg_id(msg_id)</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg_id</td><td><code>string</code></td><td>Message Identifier of the message itself</td></tr>
+</tbody></table>
+<h4 id="msg_id-string"><a class="header" href="#msg_id-string">msg_id(): string</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Message Identifier of the Address</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_stringaddress-address"><a class="header" href="#from_stringaddress-address">from_string(address): Address</a></h4>
+<p>Make an Address object from a string representation</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>string</code></td><td>String representation of an Address</td></tr>
+<tr><td><strong>Returns:</strong> An Address object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="to_string-string"><a class="header" href="#to_string-string">to_string(): string</a></h4>
+<p>Return a string representation of an Address object</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> String representation of an Address</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="message"><a class="header" href="#message">Message</a></h3>
+<p>A wrapper for a Rust Streams Message</p>
+<h4 id="default-message"><a class="header" href="#default-message">default(): Message</a></h4>
+<p>Generate a default message object</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A default Message object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="newpk-public_payload-masked_payload-message"><a class="header" href="#newpk-public_payload-masked_payload-message">new(pk, public_payload, masked_payload): Message</a></h4>
+<p>Make a Message object from the optional pk and the public and masked payloads</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>string / undefined</code></td><td>Optional public key for message</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Public payload bytes</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Masked payload bytes</td></tr>
+<tr><td><strong>Returns:</strong> A Message wrapper object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_pk-string"><a class="header" href="#get_pk-string">get_pk(): string</a></h4>
+<p>Fetch the public key of the Message sender (default if none is presented)</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public key in hex representation of the sender of the message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_public_payload-uint8array"><a class="header" href="#get_public_payload-uint8array">get_public_payload(): Uint8Array</a></h4>
+<p>Fetch the public payload of the Message sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public payload byte array</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_masked_payload-uint8array"><a class="header" href="#get_masked_payload-uint8array">get_masked_payload(): Uint8Array</a></h4>
+<p>Fetch the masked payload of the Message sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Masked payload byte array</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="nextmsgid"><a class="header" href="#nextmsgid">NextMsgId</a></h3>
+<p>A wrapper for a Rust NextMsgId structure</p>
+<h4 id="newpk-msgid-nextmsgid"><a class="header" href="#newpk-msgid-nextmsgid">new(pk, msgid): NextMsgId</a></h4>
+<p>Make a NextMsgId object from the public key and expected next message identifier</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>string</code></td><td>Public key for expected message</td></tr>
+<tr><td>msgid</td><td><a href="#Address"><code>Address</code></a></td><td>Address of expected next message</td></tr>
+<tr><td><strong>Returns:</strong> A NextMsgId wrapper object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_pk-string-1"><a class="header" href="#get_pk-string-1">get_pk(): string</a></h4>
+<p>Fetch the public key of the Message sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public key in hex representation of the sender of the message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_link-address"><a class="header" href="#get_link-address">get_link(): Address</a></h4>
+<p>Fetch the link of the expected next message for that sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public payload byte array</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="pskids"><a class="header" href="#pskids">PskIds</a></h3>
+<p>An array of PskIds representing the Pre Shared Keys that are used in keyload messages.</p>
+<h4 id="new-pskids"><a class="header" href="#new-pskids">new(): PskIds</a></h4>
+<p>Generate a new array of PskIds</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Empty array for PskIds to be added to</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="addpskid"><a class="header" href="#addpskid">add(pskid)</a></h4>
+<p>Add a pskid </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>string</code></td><td>PskId string representation [must be 32 bytes]</td></tr>
+</tbody></table>
+<h4 id="get_ids-arraystring"><a class="header" href="#get_ids-arraystring">get_ids(): Array<string></a></h4>
+<p>Fetch PskIds in string formatting</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Array of PskIds in string formatting</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="publickeys"><a class="header" href="#publickeys">PublicKeys</a></h3>
+<p>An array of PublicKeys representing a set of users.</p>
+<h4 id="new-publickeys"><a class="header" href="#new-publickeys">new(): PublicKeys</a></h4>
+<p>Generate a new array of PublicKeys</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Empty array for PublicKeys to be added to</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="addpk"><a class="header" href="#addpk">add(pk)</a></h4>
+<p>Add a public key string</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>string</code></td><td>Public Key string representation</td></tr>
+</tbody></table>
+<h4 id="get_pks-arraystring"><a class="header" href="#get_pks-arraystring">get_pks(): Array<string></a></h4>
+<p>Fetch Public Keys in string formatting</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Array of Public Keys in string formatting</td><td></td><td></td></tr>
+</tbody></table>
 
                     </main>
 

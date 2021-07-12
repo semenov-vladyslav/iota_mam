@@ -148,7 +148,561 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
+                        <h1 id="iota-streams-c-bindings-api-reference"><a class="header" href="#iota-streams-c-bindings-api-reference">Iota Streams C Bindings API Reference</a></h1>
+<h3 id="author"><a class="header" href="#author">Author</a></h3>
+<h4 id="auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreferrerr_ta"><a class="header" href="#auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreferrerr_ta">auth_new(auth, seed, encoding, payload_length, multi_branching, tsp): <a href="#Err">err_t</a></a></h4>
+<p>Generates an Author instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
+<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
+<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>tsp</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreferrerr_ta"><a class="header" href="#auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreferrerr_ta">auth_recover(auth, seed, announcement, multi_branching, tsp): <a href="#Err">err_t</a></a></h4>
+<p>Recover an Author instance using the announcement address link and seed.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>announcement</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
+<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>tsp</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> A recovered Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_dropuser"><a class="header" href="#auth_dropuser">auth_drop(user)</a></h4>
+<p>Drop an Author instance from memory.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>user</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+</tbody></table>
+<h4 id="auth_importauth-buffer-password-transport-a-hreferrerr_ta"><a class="header" href="#auth_importauth-buffer-password-transport-a-hreferrerr_ta">auth_import(auth, buffer, password, transport): <a href="#Err">err_t</a></a></h4>
+<p>Import an Author instance from an encrypted binary array</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
+<tr><td>bytes</td><td><code>buffer_t</code></td><td>Buffer with exported data</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to decrypt binary</td></tr>
+<tr><td>transport</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_exportbuf-user-password-a-hreferrerr_ta"><a class="header" href="#auth_exportbuf-user-password-a-hreferrerr_ta">auth_export(buf, user, password): <a href="#Err">err_t</a></a></h4>
+<p>Export an Author instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>buf</td><td><code>buffer_t *</code></td><td>Placeholder for resulting buffer stream of encrypted Author instance</td></tr>
+<tr><td>user</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_channel_addressaddr-user-a-hreferrerr_ta"><a class="header" href="#auth_channel_addressaddr-user-a-hreferrerr_ta">auth_channel_address(addr, user): <a href="#Err">err_t</a></a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr</td><td><code>channel_address_t const *</code></td><td>Placeholder for resulting channel address object</td></tr>
+<tr><td>user</td><td><code>author_t const *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error Code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_is_multi_branchingflag-user-a-hreferrerr_ta"><a class="header" href="#auth_is_multi_branchingflag-user-a-hreferrerr_ta">auth_is_multi_branching(flag, user): <a href="#Err">err_t</a></a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>flag</td><td><code>uint8_t *</code></td><td>Placeholder for resulting multi-branching flag: 0=single branch, 1=multi branch</td></tr>
+<tr><td>user</td><td><code>author_t const *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_get_public_keypk-user-a-hreferrerr_ta"><a class="header" href="#auth_get_public_keypk-user-a-hreferrerr_ta">auth_get_public_key(pk, user): <a href="#Err">err_t</a></a></h4>
+<p>Retrieve the Author public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>public_key_t const *</code></td><td>Placeholder for resulting Author Public Key</td></tr>
+<tr><td>user</td><td><code>author_t const *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_announceaddr-user-a-hreferrerr_ta"><a class="header" href="#auth_send_announceaddr-user-a-hreferrerr_ta">auth_send_announce(addr, user): <a href="#Err">err_t</a></a></h4>
+<p>Send an announcement message, initialising the channel </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr</td><td><code>address_t const *</code></td><td>Placeholder for resulting announcement message address</td></tr>
+<tr><td>user</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_keyload_for_everyonelinks-author-link_to-a-hreferrerr_ta"><a class="header" href="#auth_send_keyload_for_everyonelinks-author-link_to-a-hreferrerr_ta">auth_send_keyload_for_everyone(links, author, link_to): <a href="#Err">err_t</a></a></h4>
+<p>Send a keyload message for all subscribed participants in the channel, linked to a previous message 
+(usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the keyload message link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_keyloadlinks-author-link_to-psk_ids-ke_pks-a-hreferrerr_ta"><a class="header" href="#auth_send_keyloadlinks-author-link_to-psk_ids-ke_pks-a-hreferrerr_ta">auth_send_keyload(links, author, link_to, psk_ids, ke_pks): <a href="#Err">err_t</a></a></h4>
+<p>Send a keyload message for specified subscribers and pre shared keys in the channel, linked to a previous 
+message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the keyload message link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>psk_ids</td><td><a href="#PskIds"><code>psk_ids_t *</code></a></td><td>Array of PskId's for included subscribers</td></tr>
+<tr><td>ke_pks</td><td><a href="#PublicKeys"><code>ke_pks_t *</code></a></td><td>Array of Public Keys for included subscribers</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_subscribeauthor-link-a-hreferrerr_ta"><a class="header" href="#auth_receive_subscribeauthor-link-a-hreferrerr_ta">auth_receive_subscribe(author, link): <a href="#Err">err_t</a></a></h4>
+<p>Process a subscription message by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of subscription message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_tagged_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta"><a class="header" href="#auth_send_tagged_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta">auth_send_tagged_packet(links, author, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="#Err">err_t</a></a></h4>
+<p>Send a tagged packet message linked to a previous message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the tagged packet link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_signed_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta"><a class="header" href="#auth_send_signed_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta">auth_send_signed_packet(links, author, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="#Err">err_t</a></a></h4>
+<p>Send a signed packet message linked to a previous message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the signed packet link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_tagged_packetpayloads-author-link-a-hreferrerr_ta"><a class="header" href="#auth_receive_tagged_packetpayloads-author-link-a-hreferrerr_ta">auth_receive_tagged_packet(payloads, author, link): <a href="#Err">err_t</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the tagged packet message</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_signed_packetpayloads-author-link-a-hreferrerr_ta"><a class="header" href="#auth_receive_signed_packetpayloads-author-link-a-hreferrerr_ta">auth_receive_signed_packet(payloads, author, link): <a href="#Err">err_t</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the signed packet message</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_sequenceseq-author-link-a-hreferrerr_ta"><a class="header" href="#auth_receive_sequenceseq-author-link-a-hreferrerr_ta">auth_receive_sequence(seq, author, link): <a href="#Err">err_t</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>seq</td><td><a href="#Address"><code>address_t const **</code></a></td><td>The address link of the sequenced message.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of sequence message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_msgumsg-author-link-a-hreferrerr_ta"><a class="header" href="#auth_receive_msgumsg-author-link-a-hreferrerr_ta">auth_receive_msg(umsg, author, link): <a href="#Err">err_t</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsg</td><td><a href="#UnwrappedMessage">unwrapped_message_t const *</a></td><td>An Unwrapped Message wrapper around the retrieved message.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of sequence message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_sync_stateumsgs-author-a-hreferrerr_ta"><a class="header" href="#auth_sync_stateumsgs-author-a-hreferrerr_ta">auth_sync_state(umsgs, author): <a href="#Err">err_t</a></a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the user state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved publisher messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_fetch_next_msgsumsgs-author-a-hreferrerr_ta"><a class="header" href="#auth_fetch_next_msgsumsgs-author-a-hreferrerr_ta">auth_fetch_next_msgs(umsgs, author): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved publisher messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_gen_next_msg_idsids-author-a-hreferrerr_ta"><a class="header" href="#auth_gen_next_msg_idsids-author-a-hreferrerr_ta">auth_gen_next_msg_ids(ids, author): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>ids</td><td><code>next_msg_ids_t const *</code></td><td>Placeholder for resulting NextMsgIds wrapper for expected publisher messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_fetch_statestate-author-a-hreferrerr_ta"><a class="header" href="#auth_fetch_statestate-author-a-hreferrerr_ta">auth_fetch_state(state, author): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the current user state to see the latest links for each publisher</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>Placeholder for resulting User State wrapper around publisher states within the channel</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_store_pskpskid-author-psk-a-hreferrerr_ta"><a class="header" href="#auth_store_pskpskid-author-psk-a-hreferrerr_ta">auth_store_psk(pskid, author, psk): <a href="#Err">err_t</a></a></h4>
+<p>Stores a given Pre Shared Key (Psk) into the Author instance, returning a Pre Shared Key Id (PskId) </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>pskid_t *</code></td><td>Placeholder for resulting PskId object representing the Psk in store</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>psk</td><td><code>char const *</code></td><td>Unique Pre Shared Key</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="subscriber"><a class="header" href="#subscriber">Subscriber</a></h3>
+<h4 id="sub_newsub-seed-encoding-payload_length-transport-a-hreferrerr_ta"><a class="header" href="#sub_newsub-seed-encoding-payload_length-transport-a-hreferrerr_ta">sub_new(sub, seed, encoding, payload_length, transport): <a href="#Err">err_t</a></a></h4>
+<p>Generates a new Subscriber instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
+<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
+<tr><td>transport</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_recoversub-seed-announcement-transport-a-hreferrerr_ta"><a class="header" href="#sub_recoversub-seed-announcement-transport-a-hreferrerr_ta">sub_recover(sub, seed, announcement, transport): <a href="#Err">err_t</a></a></h4>
+<p>Recover a Subscriber instance using the announcement address link and seed.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>announcement</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
+<tr><td>transport</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_dropuser"><a class="header" href="#sub_dropuser">sub_drop(user)</a></h4>
+<p>Drop a Subscriber instance from memory.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+</tbody></table>
+<h4 id="sub_importsub-buffer-password-transport-a-hreferrerr_ta"><a class="header" href="#sub_importsub-buffer-password-transport-a-hreferrerr_ta">sub_import(sub, buffer, password, transport): <a href="#Err">err_t</a></a></h4>
+<p>Import a Subscriber instance from an encrypted binary array </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
+<tr><td>buffer</td><td><code>buffer_t</code></td><td>Buffer with exported data</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to decrypt binary</td></tr>
+<tr><td>transport</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_exportbuf-subscriber-password-a-hreferrerr_ta"><a class="header" href="#sub_exportbuf-subscriber-password-a-hreferrerr_ta">sub_export(buf, subscriber, password): <a href="#Err">err_t</a></a></h4>
+<p>Export a Subscriber instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>buf</td><td><code>buffer_t *</code></td><td>Placeholder for resulting buffer stream of encrypted Subscriber instance</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_channel_addressaddr-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_channel_addressaddr-subscriber-a-hreferrerr_ta">sub_channel_address(addr, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr</td><td><code>channel_address_t const *</code></td><td>Placeholder for resulting channel address object</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_is_multi_branchingflag-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_is_multi_branchingflag-subscriber-a-hreferrerr_ta">sub_is_multi_branching(flag, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>flag</td><td><code>uint8_t *</code></td><td>Placeholder for resulting multi-branching flag: 0=single branch, 1=multi branch</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_get_public_keypk-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_get_public_keypk-subscriber-a-hreferrerr_ta">sub_get_public_key(pk, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Retrieve the Subscriber public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>public_key_t const *</code></td><td>Placeholder for resulting Author Public Key</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_is_registeredsubscriber-uint8_t"><a class="header" href="#sub_is_registeredsubscriber-uint8_t">sub_is_registered(subscriber): uint8_t</a></h4>
+<p>Check if subscriber has processed an announcement message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Uint8 representing if the Subscriber has processed an announcement: 0=false, 1=true.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_unregistersubscriber"><a class="header" href="#sub_unregistersubscriber">sub_unregister(subscriber)</a></h4>
+<p>Unregister the subscriber from a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+</tbody></table>
+<h4 id="sub_receive_announcementsubscriber-address-a-hreferrerr_ta"><a class="header" href="#sub_receive_announcementsubscriber-address-a-hreferrerr_ta">sub_receive_announcement(subscriber, address): <a href="#Err">err_t</a></a></h4>
+<p>Process an announcement message by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of announcement message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_send_subscribelink-subscriber-announcement_link-a-hreferrerr_ta"><a class="header" href="#sub_send_subscribelink-subscriber-announcement_link-a-hreferrerr_ta">sub_send_subscribe(link, subscriber, announcement_link): <a href="#Err">err_t</a></a></h4>
+<p>Send a subscription message, initialising the channel </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address_t const **</code></a></td><td>The address of the subscription message.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>announcement_link</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_send_tagged_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta"><a class="header" href="#sub_send_tagged_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta">sub_send_tagged_packet(links, subscriber, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="#Err">err_t</a></a></h4>
+<p>Send a tagged packet message linked to a previous message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the tagged packet link and sequence link.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>link_to</td><td><a href="#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_send_signed_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta"><a class="header" href="#sub_send_signed_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreferrerr_ta">sub_send_signed_packet(links, subscriber, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="#Err">err_t</a></a></h4>
+<p>Send a signed packet message linked to a previous message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the signed packet link and sequence link.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>link_to</td><td><a href="#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_keyloadsubscriber-address-a-hreferrerr_ta"><a class="header" href="#sub_receive_keyloadsubscriber-address-a-hreferrerr_ta">sub_receive_keyload(subscriber, address): <a href="#Err">err_t</a></a></h4>
+<p>Receive a keyload packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of keyload message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_keyload_from_idslinks-subscriber-next_msg_ids-a-hreferrerr_ta"><a class="header" href="#sub_receive_keyload_from_idslinks-subscriber-next_msg_ids-a-hreferrerr_ta">sub_receive_keyload_from_ids(links, subscriber, next_msg_ids): <a href="#Err">err_t</a></a></h4>
+<p>Receive a keyload packet by a set of next msg ids.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the keyload message link and sequence link.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>next_msg_ids</td><td><a href="#NextMsgIds"><code>next_msg_ids_t const *</code></a></td><td>Address of keyload message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_tagged_packetpayloads-subscriber-address-a-hreferrerr_ta"><a class="header" href="#sub_receive_tagged_packetpayloads-subscriber-address-a-hreferrerr_ta">sub_receive_tagged_packet(payloads, subscriber, address): <a href="#Err">err_t</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the tagged packet message</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_signed_packetpayloads-subscriber-address-a-hreferrerr_ta"><a class="header" href="#sub_receive_signed_packetpayloads-subscriber-address-a-hreferrerr_ta">sub_receive_signed_packet(payloads, subscriber, address): <a href="#Err">err_t</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the signed packet message</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_sequenceaddress-subscriber-seq_address-a-hreferrerr_ta"><a class="header" href="#sub_receive_sequenceaddress-subscriber-seq_address-a-hreferrerr_ta">sub_receive_sequence(address, subscriber, seq_address): <a href="#Err">err_t</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><a href="#Address"><code>address_t const **</code></a></td><td>The address link of the sequenced message.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>seq_address</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of sequence message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_msgumsg-subscriber-address-a-hreferrerr_ta"><a class="header" href="#sub_receive_msgumsg-subscriber-address-a-hreferrerr_ta">sub_receive_msg(umsg, subscriber, address): <a href="#Err">err_t</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsg</td><td><a href="#UnwrappedMessage">unwrapped_message_t const *</a></td><td>An Unwrapped Message wrapper around the retrieved message.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Address of the message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_sync_stateumsgs-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_sync_stateumsgs-subscriber-a-hreferrerr_ta">sub_sync_state(umsgs, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the subscriber state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><a href="#UnwrappedMessages"><code>unwrapped_messages_t const **</code></a></td><td>An Array of UnwrappedMessage wrappers around the retrieved messages.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_next_msgsumsgs-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_fetch_next_msgsumsgs-subscriber-a-hreferrerr_ta">sub_fetch_next_msgs(umsgs, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><a href="#UnwrappedMessages"><code>unwrapped_messages_t const **</code></a></td><td>An Array of UnwrappedMessage wrappers around the retrieved messages.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_gen_next_msg_idsids-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_gen_next_msg_idsids-subscriber-a-hreferrerr_ta">sub_gen_next_msg_ids(ids, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_statestate-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_fetch_statestate-subscriber-a-hreferrerr_ta">sub_fetch_state(state, subscriber): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the current subscriber state to see the latest links for each publisher</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>Placeholder for resulting User State wrapper around publisher states within the channel</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_store_pskpskid-subscriber-psk-a-hreferrerr_ta"><a class="header" href="#sub_store_pskpskid-subscriber-psk-a-hreferrerr_ta">sub_store_psk(pskid, subscriber, psk): <a href="#Err">err_t</a></a></h4>
+<p>Stores a given Pre Shared Key (Psk) into the Subscriber instance, returning a Pre Shared Key Id (PskId) </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>pskid_t *</code></td><td>Placeholder for resulting PskId object representing the Psk in store</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>psk</td><td><code>char const *</code></td><td>Unique Pre Shared Key</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
+<h3 id="err"><a class="header" href="#err">Err</a></h3>
+<p>Error code</p>
+<table><thead><tr><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td>ERR_OK</td><td>Success, no errors</td></tr>
+<tr><td>ERR_NULL_ARGUMENT</td><td>Null-pointer argument</td></tr>
+<tr><td>ERR_BAD_ARGUMENT</td><td>An invalid argument was given as input</td></tr>
+<tr><td>ERR_OPERATION_FAILED</td><td>Transport, wrap/unwrap operation failed</td></tr>
+</tbody></table>
+<h3 id="transportdetails"><a class="header" href="#transportdetails">TransportDetails</a></h3>
+<h3 id="transportwrap"><a class="header" href="#transportwrap">TransportWrap</a></h3>
+<h4 id="transport_new-transport_t-"><a class="header" href="#transport_new-transport_t-">transport_new(): transport_t *</a></h4>
+<p>Generate a default transport client object (best for testing purposes)</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A generic transport client wrap</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="transport_droptsp"><a class="header" href="#transport_droptsp">transport_drop(tsp)</a></h4>
+<p>Drop transport client from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>tsp</td><td><code>transport_t *</code></td><td>Transport Client</td></tr>
+</tbody></table>
+<h4 id="transport_client_new_from_urlurl-transport_t-"><a class="header" href="#transport_client_new_from_urlurl-transport_t-">transport_client_new_from_url(url): transport_t *</a></h4>
+<p>Generate a transport client object with a given node url</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>url</td><td><code>char const *</code></td><td>Node Url</td></tr>
+<tr><td><strong>Returns:</strong> A transport client wrapper to communicate with a node</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="transport_get_link_detailsdetails-transport-link-a-hreferrerr_ta"><a class="header" href="#transport_get_link_detailsdetails-transport-link-a-hreferrerr_ta">transport_get_link_details(details, transport, link): <a href="#Err">err_t</a></a></h4>
+<p>Retrieved message details for a given message link</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>details</td><td><a href="#TransportDetails"><code>transport_details_t *</code></a></td><td>Placeholder for resulting message details</td></tr>
+<tr><td>transport</td><td><code>transport_t *</code></td><td>Transport Client</td></tr>
+<tr><td>link</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> Error code</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="address"><a class="header" href="#address">Address</a></h3>
+<h4 id="address_from_stringaddr_str-address_t-"><a class="header" href="#address_from_stringaddr_str-address_t-">address_from_string(addr_str): address_t *</a></h4>
+<p>Create an address object form a string </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr_str</td><td><code>char const *</code></td><td>A string representation of link</td></tr>
+<tr><td><strong>Returns:</strong> An Address link</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_address_inst_straddress-char-const-"><a class="header" href="#get_address_inst_straddress-char-const-">get_address_inst_str(address): char const *</a></h4>
+<p>Get the string representation of the Address Application Instance</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the Address Application Instance</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_address_id_straddress-char-const-"><a class="header" href="#get_address_id_straddress-char-const-">get_address_id_str(address): char const *</a></h4>
+<p>Get the string representation of the Address Message Identifier</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the Address Message Identifier</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_address_index_straddress-char-const-"><a class="header" href="#get_address_index_straddress-char-const-">get_address_index_str(address): char const *</a></h4>
+<p>Get the string representation of the streams message Tangle Index</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the message Tangle Index</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_addressaddress"><a class="header" href="#drop_addressaddress">drop_address(address)</a></h4>
+<p>Drop an Address wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+</tbody></table>
+<h3 id="channeladdress"><a class="header" href="#channeladdress">ChannelAddress</a></h3>
+<h4 id="get_channel_address_strappinst-char-const-"><a class="header" href="#get_channel_address_strappinst-char-const-">get_channel_address_str(appinst): char const *</a></h4>
+<p>Get the string representation of the Channel Address</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>appinst</td><td><code>channel_address_t const *</code></td><td>Channel Application Instance</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the Channel Address</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="messagelinks"><a class="header" href="#messagelinks">MessageLinks</a></h3>
+<p>Wrapper for Message containing the message link, and the sequence link (if you are using multi branching)
+| Param           | Type                          | Description                         |
+| --------------- | ----------------------------- | ----------------------------------- |
+| msg_link         | <code>address_t const *</code>          | Message link address                | 
+| seq_link         | <code>address_t const *</code>          | Sequence link address               | </p>
+<h4 id="drop_linksmsg_links"><a class="header" href="#drop_linksmsg_links">drop_links(msg_links)</a></h4>
+<p>Drop a MessageLinks wrapper from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg_links</td><td><code>message_links_t</code></td><td>Message Links Wrapper</td></tr>
+</tbody></table>
+<h3 id="unwrappedmessage"><a class="header" href="#unwrappedmessage">UnwrappedMessage</a></h3>
+<p>A wrapper around a retrieved message</p>
+<h4 id="get_payloadmessage-packet_payloads_t"><a class="header" href="#get_payloadmessage-packet_payloads_t">get_payload(message): packet_payloads_t</a></h4>
+<p>Fetch the payload from an Unwrapped Message wrapper</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>message</td><td><code>unwrapped_message_t const *</code></td><td>Unwrapped Message Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> The PacketPayloads wrapper of the message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_unwrapped_messagemessage"><a class="header" href="#drop_unwrapped_messagemessage">drop_unwrapped_message(message)</a></h4>
+<p>Drop an Unwrapped Message wrapper from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>message</td><td><code>unwrapped_message_t const *</code></td><td>Unwrapped Message Wrapper</td></tr>
+</tbody></table>
+<h3 id="unwrappedmessages"><a class="header" href="#unwrappedmessages">UnwrappedMessages</a></h3>
+<p>An array of <code>UnwrappedMessage</code>'s</p>
+<h4 id="get_indexed_payloadmessages-index-packet_payloads_t"><a class="header" href="#get_indexed_payloadmessages-index-packet_payloads_t">get_indexed_payload(messages, index): packet_payloads_t</a></h4>
+<p>Fetch the payload of the provided index of the Unwrapped Messages wrapper.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>messages</td><td><code>unwrapped_messages_t const *</code></td><td>Unwrapped Message Wrapper</td></tr>
+<tr><td>index</td><td><code>size_t</code></td><td>Index of message in array</td></tr>
+<tr><td><strong>Returns:</strong> The PacketPayloads wrapper of the indexed message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_unwrapped_messagesmessages"><a class="header" href="#drop_unwrapped_messagesmessages">drop_unwrapped_messages(messages)</a></h4>
+<p>Drop an Unwrapped Messages wrapper from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>messages</td><td><code>unwrapped_messages_t const *</code></td><td>Unwrapped Messages Wrapper</td></tr>
+</tbody></table>
+<h3 id="packetpayloads"><a class="header" href="#packetpayloads">PacketPayloads</a></h3>
+<p>Contains a <code>public_payload</code> byte array and a <code>masked_payload</code> byte array for a streams message</p>
+<h4 id="drop_payloadspayloads"><a class="header" href="#drop_payloadspayloads">drop_payloads(payloads)</a></h4>
+<p>Drop a PacketPayloads wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><code>packet_payloads_t</code></td><td>Packet Payloads Wrapper</td></tr>
+</tbody></table>
+<h3 id="publickey"><a class="header" href="#publickey">PublicKey</a></h3>
+<p>An Ed25519 Public Key</p>
+<h4 id="public_key_to_stringpubkey-char-const-"><a class="header" href="#public_key_to_stringpubkey-char-const-">public_key_to_string(pubkey): char const *</a></h4>
+<p>Get a hex string representation of an Ed25519 Public Key</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pubkey</td><td><code>public_key_t *</code></td><td>Ed25519 Public Key</td></tr>
+<tr><td><strong>Returns:</strong> Hex string representation of an Ed25519 Public Key</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="nextmsgids"><a class="header" href="#nextmsgids">NextMsgIds</a></h3>
+<p>A wrapper for a list mapping Public Key strings, and a state cursors for expected next message ids.</p>
+<h4 id="drop_next_msg_idsm"><a class="header" href="#drop_next_msg_idsm">drop_next_msg_ids(m)</a></h4>
+<p>Drop a NextMsgIds wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>next_msg_ids_t const *</code></td><td>A NextMsgId wrapper</td></tr>
+</tbody></table>
+<h3 id="userstate"><a class="header" href="#userstate">UserState</a></h3>
+<p>A wrapper for a list mapping Public Key strings and a state cursor.</p>
+<h4 id="get_link_from_statestate-pub_key-address_t-const-"><a class="header" href="#get_link_from_statestate-pub_key-address_t-const-">get_link_from_state(state, pub_key): address_t const *</a></h4>
+<p>Get the latest link of a specific user by their Ed25519 Public Key</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>User State Wrapper</td></tr>
+<tr><td>pubkey</td><td><code>public_key_t const *</code></td><td>Ed25519 Public Key</td></tr>
+<tr><td><strong>Returns:</strong> Latest address link of the provided user key</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_user_statestate"><a class="header" href="#drop_user_statestate">drop_user_state(state)</a></h4>
+<p>Drop a User State wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>A User State wrapper</td></tr>
+</tbody></table>
+<h3 id="strings"><a class="header" href="#strings">strings</a></h3>
+<h4 id="drop_strstring"><a class="header" href="#drop_strstring">drop_str(string)</a></h4>
+<p>Drop a rust allocated string from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>string</td><td><code>char const *</code></td><td>A string object</td></tr>
+</tbody></table>
+<h3 id="publickeys"><a class="header" href="#publickeys">PublicKeys</a></h3>
+<p>An array of <a href="#PublicKey"><code>PublicKey</code></a>'s</p>
+<h3 id="psk"><a class="header" href="#psk">Psk</a></h3>
+<p>A 32 Byte Pre Shared Key</p>
+<h3 id="pskid"><a class="header" href="#pskid">PskId</a></h3>
+<p>Array of 16 bytes representing the identifier of a 32 byte <a href="#Psk"><code>Psk</code></a></p>
+<h4 id="pskid_as_strpskid"><a class="header" href="#pskid_as_strpskid">pskid_as_str(pskid)</a></h4>
+<p>Drop a rust allocated string from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>pskid_t const *</code></td><td>A Pre Shared Key Identifier</td></tr>
+<tr><td><strong>Returns:</strong> String representation of the PskId object</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="pskids"><a class="header" href="#pskids">PskIds</a></h3>
+<p>An array of <a href="#PskId"><code>PskId</code></a>'s</p>
 
                     </main>
 

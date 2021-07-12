@@ -149,6 +149,158 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<p>An overview example of the available api tools can be found <a href="../../../bindings/c/main.c">here</a>.
+The general API is simply an abstraction over the rust library, so the examples found 
+<a href="../rust/examples.html">here</a> still apply (with some minor modifications, see: <a href="api_reference.html">api_reference</a>)</p>
+<h2 id="core-functionality"><a class="header" href="#core-functionality">Core Functionality</a></h2>
+<h3 id="author-generation"><a class="header" href="#author-generation">Author Generation</a></h3>
+<p>Create an Author and generate a new channel:</p>
+<pre><code class="language-c">uint8_t multi_branching = 0;
+char seed[] = &quot;Some unique seed&quot;;
+char const encoding[] = &quot;utf-8&quot;;
+const size_t size = 1024;
+char const *url = &quot;https://chrysalis-nodes.iota.org&quot;;
+
+transport_t *tsp = tsp_client_new_from_url(url);
+author_t *auth = auth_new(seed, encoding, size, multi_branching, tsp);
+address_t const *ann_link = auth_send_announce(auth);
+printf(&quot;Announcement message sent&quot;);
+
+char const *ann_address_inst_str = get_address_inst_str(ann_link);
+char const *ann_address_id_str = get_address_id_str(ann_link);
+// Link used by subscribers to attach to instance
+printf(&quot;Link: %s:%s\n&quot;, ann_address_inst_str, ann_address_id_str);
+
+// Clean up
+drop_str(ann_address_inst_str);
+drop_str(ann_address_id_str);
+drop_address(ann_link);
+auth_drop(auth);
+tsp_drop(tsp);
+</code></pre>
+<h3 id="subscriber-generation"><a class="header" href="#subscriber-generation">Subscriber Generation</a></h3>
+<p>Create a Subscriber and attach to a channel:</p>
+<pre><code class="language-c">char seed[] = &quot;Some unique seed&quot;;
+char const encoding[] = &quot;utf-8&quot;;
+const size_t size = 1024;
+char const *url = &quot;https://chrysalis-nodes.iota.org&quot;;
+
+transport_t *tsp = tsp_client_new_from_url(url);
+subscriber_t *sub = sub_new(seed, encoding, size, tsp);
+
+address_t const *ann_link = address_from_string(&quot;Announcement:Link&quot;);
+sub_receive_announcement(sub, ann_link);
+
+// Clean up
+drop_address(ann_link);
+sub_drop(sub);
+tsp_drop(tsp);
+</code></pre>
+<h3 id="subscription"><a class="header" href="#subscription">Subscription</a></h3>
+<p>Subscriber sends a subscription message:</p>
+<pre><code class="language-c">address_t const *sub_link = sub_send_subscribe(sub, ann_link);
+char const *sub_inst_str = get_address_inst_str(ann_link);
+char const *sub_id_str = get_address_id_str(ann_link);
+// Link used by Author to process subscription
+printf(&quot;Link: %s:%s\n&quot;, sub_inst_str, sub_id_str);
+
+// Clean up
+drop_str(sub_inst_str);
+drop_str(sub_id_str);
+drop_address(sub_link);
+</code></pre>
+<p>Author accepts and processes subscription: </p>
+<pre><code class="language-c">address_t const *sub_link = address_from_string(&quot;Subscribe:Link&quot;);
+auth_receive_subscribe(auth, sub_link);
+drop_address(sub_link);
+</code></pre>
+<h3 id="keyload"><a class="header" href="#keyload">Keyload</a></h3>
+<p>Author sends a keyload for all participants in the channel:</p>
+<pre><code class="language-c">message_links_t keyload_links = auth_send_keyload_for_everyone(auth, ann_link);
+char const *keyload_inst_str = get_address_inst_str(keyload_links.msg_link);
+char const *keyload_id_str = get_address_id_str(keyload_links.msg_link);
+// Keyload message can now act as starting point for a protected branch
+printf(&quot;Link: %s:%s\n&quot;, keyload_inst_str, keyload_id_str);
+
+// Clean up
+drop_str(keyload_inst_str);
+drop_str(keyload_id_str);
+drop_links(keyload_links);
+</code></pre>
+<p>Author sends a keyload for just one subscriber in the channel:</p>
+<pre><code class="language-c">sig_pks_t *sig_pks[sub_pk]
+message_links_t keyload_links = auth_send_keyload(auth, ann_link, NULL, sig_pks);
+char const *keyload_inst_str = get_address_inst_str(keyload_links.msg_link);
+char const *keyload_id_str = get_address_id_str(keyload_links.msg_link);
+// Keyload message can now act as starting point for a protected branch
+printf(&quot;Link: %s:%s\n&quot;, keyload_inst_str, keyload_id_str);
+
+// Clean up
+drop_str(keyload_inst_str);
+drop_str(keyload_id_str);
+drop_links(keyload_links);
+</code></pre>
+<h3 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h3>
+<p>Messages are required to be linked to a previous message that the user had access to. 
+In a single branch implementation this means the latest message in the branch, in multi
+branch implementations, this can mean any message in a branch that they have had access 
+to.</p>
+<p><em>Note: In a multi publisher implementation (i.e. multiple publishers in a single branch),
+it is required that each publisher make sure to sync their state before publishing to ensure 
+that the instance stays in sync with the other publishers</em></p>
+<pre><code class="language-c">char const public_payload[] = &quot;A public payload woopeee&quot;;
+char const masked_payload[] = &quot;A masked payload uhu&quot;;
+
+sub_sync_state(sub);
+message_links_t signed_packet_links = sub_send_signed_packet(
+    sub, keyload_links,
+    (uint8_t const *)public_payload, sizeof(public_payload),
+    (uint8_t const *)masked_payload, sizeof(masked_payload)
+);
+
+char const *signed_packet_inst_str = get_address_inst_str(signed_packet_links.msg_link);
+char const *signed_packet_id_str = get_address_id_str(signed_packet_links.msg_link);
+printf(&quot;Signed Packet link: %s:%s\n&quot;, keyload_inst_str, keyload_id_str);
+
+// Clean up
+drop_str(signed_packet_inst_str);
+drop_str(signed_packet_id_str);
+drop_links(signed_packet_links);
+</code></pre>
+<h3 id="message-fetching"><a class="header" href="#message-fetching">Message Fetching</a></h3>
+<h4 id="forward"><a class="header" href="#forward">Forward</a></h4>
+<p>When new messages are available to retrieve from the channel, you can fetch the next 
+message sent by each publisher like so:</p>
+<pre><code class="language-c">unwrapped_messages_t const *message_returns = sub_sync_state(subA);
+
+size_t x;
+for(x = 0; x &lt; sizeof(message_returns); x++)
+  {
+    printf(&quot;Found a message...&quot;);
+    packet_payloads_t response = get_indexed_payload(message_returns, x);
+    printf(&quot;Unpacking message...\npublic: '%s' \tmasked: '%s'\n&quot;, response.public_payload.ptr, response.masked_payload.ptr);
+  }
+
+// Clean up
+drop_unwrapped_messages(message_returns);
+</code></pre>
+<p>If no new messages are present, the returned array will be empty.</p>
+<h4 id="backwards"><a class="header" href="#backwards">Backwards</a></h4>
+<pre><code class="language-c">size_t num_messages = 10;
+unwrapped_messages_t const *prev_msgs = auth_fetch_prev_msgs(auth, latest_msg_link, num_messages);
+printf(&quot;Previous messages retrieved... \n);
+
+size_t x;
+for(x = 0; x &lt; sizeof(message_returns); x++)
+  {
+    printf(&quot;Found a message...&quot;);
+    packet_payloads_t response = get_indexed_payload(message_returns, x);
+    printf(&quot;Unpacking message...\npublic: '%s' \tmasked: '%s'\n&quot;, response.public_payload.ptr, response.masked_payload.ptr);
+  }
+
+// Clean up
+drop_unwrapped_messages(prev_msgs);
+</code></pre>
 
                     </main>
 

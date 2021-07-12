@@ -149,6 +149,142 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>Streams requires an asynchronous runtime environment to be set (we suggest using <code>tokio</code>). Streams also uses 
+<code>anyhow</code> for error handling, so for ease of use, new projects can use <code>anyhow::Result</code> and <code>anyhow::Error</code> 
+for easier integration. </p>
+<p>If you don't have a rust project setup yet you can create one by running,</p>
+<pre><code>cargo new my-library
+</code></pre>
+<p><strong>Remote</strong>
+Add the following to your <code>Cargo.toml</code> file:</p>
+<pre><code class="language-bash">[dependencies]
+tokio = { version = &quot;1.5.0&quot;, features = [&quot;full&quot;] }
+anyhow = { version = &quot;1.0&quot;, default-features = false }
+iota-streams = { git = &quot;https://github.com/iotaledger/streams&quot;, branch  = &quot;master&quot;}
+</code></pre>
+<p><strong>Local</strong></p>
+<ol>
+<li>
+<p>Clone the streams repository</p>
+<pre><code class="language-bash">git clone https://github.com/iotaledger/streams
+</code></pre>
+</li>
+<li>
+<p>Add the following to your <code>Cargo.toml</code> file:</p>
+<pre><code class="language-bash">[dependencies]
+iota-streams = { version = &quot;1.0.0&quot;, path = &quot;../streams&quot; }
+</code></pre>
+</li>
+</ol>
+<h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
+<p>Once installed, users can implement their author and subscribers and start a new channel.</p>
+<h3 id="author-implementation"><a class="header" href="#author-implementation">Author Implementation</a></h3>
+<pre><code>use iota_streams::app_channels::api::tangle::{Author, ChannelType};
+use iota_streams::app::transport::tangle::client::Client;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let node = &quot;https://chrysalis-nodes.iota.org&quot;;
+    let client = Client::new_from_url(node);
+
+    // Author implementation will set the Channel Type
+    let mut author = Author::new(&quot;AUTHORS_UNIQUE_SEED&quot;, ChannelType::SingleBranch, client);
+    
+    // Start the channel and retrieve the announcement address link
+    let ann_address = author.send_announce()?;   
+
+    // Convert the announcement address to a string to share with others
+    println!(&quot;{}&quot;, ann_address.to_string()); 
+}
+</code></pre>
+<h3 id="subscriber-implementation"><a class="header" href="#subscriber-implementation">Subscriber Implementation</a></h3>
+<pre><code>use iota_streams::app_channels::api::tangle::{Address, Subscriber};
+use iota_streams::app::transport::tangle::client::Client;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let node = &quot;https://chrysalis-nodes.iota.org&quot;;
+    let client = Client::new_from_url(node);
+
+    // Subscriber implementation does not need to specify a channel type, it will be 
+    // parsed from the announcement message
+    let mut subscriber = Subscriber::new(&quot;SUBSCRIBER_UNIQUE_SEED&quot;, client);
+    
+    // Create Address object from announcement address string
+    let ann_address = Address::from_str(&quot;Announcement link address provided by author&quot;)?;   
+
+    // Process the announcement message
+    subscriber.receive_announcement(ann_address)?;
+}
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>From here you can now begin subscribing users to the channel and generating branches to specify access control 
+for publishers/readers via <code>Keyload</code> messages.</p>
+<h3 id="subscription"><a class="header" href="#subscription">Subscription</a></h3>
+<p>Subscribers generate their <code>Subscribe</code> messages linked to a channel <code>Announce</code> message. The link of this message 
+should then be provided to the <code>Author</code> for processing to include the users public key for access control and 
+validation purposes.</p>
+<p>Example: </p>
+<pre><code>Subscriber: 
+// Send subscription message
+let sub_link = subscriber.send_subscribe(&amp;ann_address)?;
+// Provide this link to the author
+println!(&quot;{}&quot;, sub_link.to_string());
+</code></pre>
+<pre><code>Author: 
+// Process subscriber link 
+let sub_link = Address::from_str(&quot;Sub link provided by desired subscriber&quot;)?;
+author.receive_subscribe(&amp;sub_link)?;
+</code></pre>
+<h3 id="keyloads"><a class="header" href="#keyloads">Keyloads</a></h3>
+<p><code>Keyload</code> messages are used as an access control mechanism for a branch. A random key is generated and masked within the 
+message using the public keys or <code>Psk</code>'s included in them. This allows the <code>Author</code> to specify which channel 
+participants have access to which branches. There are 2 ways to send a keyload: </p>
+<ol>
+<li><code>send_keyload(&amp;Address, &amp;Vec&lt;PskId&gt;, &amp;Vec&lt;PublicKey&gt;)</code> - In this function you need to specify:
+<ul>
+<li>the message link that the <code>Keyload</code> message will be attached to (for generating new branches, this should be the 
+<code>Announce</code> message) </li>
+<li>a slice containing the <code>PskId</code>'s of the Pre-Shared Keys intended to be included </li>
+<li>a slice containing the <code>ed25519::PublicKey</code>'s of each <code>Subscriber</code> that is meant to be granted access </li>
+</ul>
+</li>
+<li><code>send_keyload_for_everyone(&amp;Address)</code> - In this function you only need to specify the message link that the <code>Keyload</code> 
+will be attaching to. The <code>Keyload</code> will be sent including all stored <code>PSK</code>'s and all stored <code>Subscriber</code> public keys </li>
+</ol>
+<p>Example: </p>
+<pre><code>// Send Keyload for everyone (starting a new branch) 
+author.send_keyload_for_everyone(&amp;announcement_link)?;
+
+// Send Keyload including Pre Shared Key 2 
+author.send_keyload(&amp;announcement_link, &amp;vec![PskId2], &amp;vec![])?;
+
+// Send Keyload for Subscriber 3
+author.send_keyload(&amp;announcement_link, &amp;vec![], &amp;vec![subscriber_3_pub_key])?;
+</code></pre>
+<h3 id="pre-shared-keys"><a class="header" href="#pre-shared-keys">Pre-Shared Keys</a></h3>
+<p>As an alternative to subscribing via public key exchange, an <code>Author</code> may specify access control through the use of 
+a Pre-Shared Key (<code>PSK</code>). A <code>PSK</code> is a 32 byte array containing a secret key shared outside of the streams instance 
+that can be used to specify access through a <code>Keyload</code> message. If an <code>Author</code> issues a <code>Keyload</code> with a <code>PSK</code> included, 
+and a <code>Subscriber</code> reads this message with the same <code>PSK</code> stored within itself, then the <code>Subscriber</code> can participate in 
+the proceeding branch without being subscribed to the channel. </p>
+<p>Example: </p>
+<pre><code>// Create a random key (for example) and make the Psk from it
+let key = rand::thread_rng().gen::&lt;[u8; 32]&gt;();
+let psk = iota_streams::core::psk::Psk::clone_from_slice(&amp;key);
+
+// Store the psk and retrieve the pskid
+let pskid = author.store_psk(psk.clone());
+
+// Create a keyload with the psk included
+let keyload_link = author.send_keyload(&amp;prev_msg_link, &amp;vec![pskid], &amp;vec![])?;
+
+// Store the same psk in subscriber 
+let _sub_pskid = subscriber.store_psk(psk);
+
+// Process keyload message from subscriber end
+subscriber.receive_keyload(&amp;keyload_link)?;
+</code></pre>
 
                     </main>
 

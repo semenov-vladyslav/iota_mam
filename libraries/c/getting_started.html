@@ -149,6 +149,65 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>The C bindings allow for you to build a Streams API which can be pulled into other languages. 
+The streams instance underlying the bindings is built with the <code>sync-client</code> flag to 
+ensure a compatible client interface using the <code>iota.rs iota-client</code> crate. </p>
+<p>Before building anything you'll need to make sure you have <code>cmake</code> installed on your 
+machine.</p>
+<p>To build the library, first make sure you're in the c directory:</p>
+<pre><code>cd bindings/c
+</code></pre>
+<p>Update the flags in the <code>CMakeLists.txt</code> and run <code>cmake .</code> to 
+prepare the installation files. </p>
+<h4 id="options-for-cmakelliststxt"><a class="header" href="#options-for-cmakelliststxt">Options for CMakeLlists.txt</a></h4>
+<ul>
+<li><code>NO_STD</code>: Enable no_std build, without iota_client (when ON, <code>SYNC_CLIENT</code> isnt supported)</li>
+<li><code>SYNC_CLIENT</code>: Enable sync transport via iota_client, otherwise it's going to be Bucket which can only be used for tests</li>
+<li><code>STATIC</code>: Build static library when ON, otherwise dynamic library</li>
+<li><code>RELEASE</code>: Build in release or debug mode (when ON, builds release, when OFF, build debug)</li>
+</ul>
+<p>To build the library run:</p>
+<pre><code class="language-bash">make
+</code></pre>
+<p>This generates a binary library to be included into a project. This can be either: </p>
+<ul>
+<li><code>iota_streams_c_static</code></li>
+<li><code>iota_streams_c.so</code> (Unix)</li>
+<li><code>iota_streams_c.dll</code> (Windows)</li>
+</ul>
+<p>An example of the header file can be found in <code>include/channels.h</code>.</p>
+<h3 id="starting-a-channel"><a class="header" href="#starting-a-channel">Starting a Channel</a></h3>
+<p>Once the package has been built, you can pull it into a script file like so: </p>
+<pre><code class="language-c">#include &quot;iota_streams/channels.h&quot;
+#include &lt;stdio.h&gt;
+
+int main()
+{
+ uint8_t multi_branching = 0;
+ char seed[] = &quot;Some unique seed&quot;;
+ char const encoding[] = &quot;utf-8&quot;;
+ const size_t size = 1024;
+ char const *url = &quot;https://chrysalis-nodes.iota.org&quot;;
+ 
+ transport_t *tsp = tsp_client_new_from_url(url);
+ // Author constructor requires: (seed, encoding, payload size, multi branching, transport client)
+ author_t *auth = auth_new(seed, encoding, size, multi_branching, tsp);
+ address_t const *ann_link = auth_send_announce(auth);
+ printf(&quot;Announcement message sent&quot;);
+ 
+ char const *ann_address_inst_str = get_address_inst_str(ann_link);
+ char const *ann_address_id_str = get_address_id_str(ann_link);
+ // Link used by subscribers to attach to instance
+ printf(&quot;Link: %s:%s\n&quot;, ann_address_inst_str, ann_address_id_str);
+ 
+ // Clean up
+ drop_str(ann_address_inst_str);
+ drop_str(ann_address_id_str);
+ drop_address(ann_link);
+ auth_drop(auth);
+ tsp_drop(tsp);
+}
+</code></pre>
 
                     </main>
 

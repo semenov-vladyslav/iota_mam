@@ -153,9 +153,8 @@
 <p>This is the documentation for the official IOTA Streams software. You can read more about core principles behind IOTA Streams in the following blog <a href="https://blog.iota.org/iota-streams-alpha-7e91ee326ac0/">post</a>.</p>
 <p><code>streams</code> is an organizational tool for structuring and navigating secure data through the Tangle. Streams organizes data by ordering it in a uniform and interoperable structure Needless to say, it is also based on our official <code>one-source-code-of-truth</code> <a href="https://github.com/iotaledger/iota.rs">IOTA Rust library</a>.</p>
 <h2 id="warning"><a class="header" href="#warning">Warning</a></h2>
-<p>This library is in active development. The library targets the Chrysalis testnet and does not work with current IOTA mainnet.</p>
-<h2 id="testnet"><a class="header" href="#testnet">Testnet</a></h2>
-<p>To join the Chrysalis public testnet checkout <a href="https://blog.iota.org/chrysalis-phase-2-testnet-out-now/">this link</a>. More information about Chrysalis components is available at <a href="https://chrysalis.docs.iota.org/">documentation portal</a>.</p>
+<p>This library is in active development. The library targets the Chrysalis network and does not work with the IOTA legacy network.</p>
+<p>More information about Chrysalis components is available at <a href="https://chrysalis.docs.iota.org/">documentation portal</a>.</p>
 <h2 id="joining-the-discussion"><a class="header" href="#joining-the-discussion">Joining the discussion</a></h2>
 <p>If you want to get involved in discussions about this library, or you're looking for support, go to the #streams-discussion channel on <a href="https://discord.iota.org">Discord</a>.</p>
 <h2 id="what-you-will-find-here"><a class="header" href="#what-you-will-find-here">What you will find here</a></h2>
@@ -168,25 +167,1669 @@
 <li>Get in touch, join the community and become part of the X-Team!</li>
 </ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="libraries"><a class="header" href="#libraries">Libraries</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="rust"><a class="header" href="#rust">Rust</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="wasm"><a class="header" href="#wasm">WASM</a></h1>
+<p>The IOTA Streams framework is intended to be a secure message verification and protection protocol 
+for sending data over a given transport layer. </p>
+<p>The Channels Protocol is designed as a replacement for the previously used MAM library for sending 
+data using the tangle as the primary transportation mechanism. The channels themselves can be 
+structured in a number of ways with any arbitrary combination of Publishers and Readers (although 
+each channel can only be hosted by a single <code>Author</code> instance)</p>
+<h1 id="channels-protocol"><a class="header" href="#channels-protocol">Channels Protocol</a></h1>
+<p>The channels protocol provides the high level api tools necessary for Authors and Subscribers to be 
+generated and interact with the tangle. </p>
+<h2 id="authors"><a class="header" href="#authors">Authors</a></h2>
+<p>A channel <code>Author</code> is responsible for the generation of a new channel along with the configuration of the 
+intended structure of that channel (i.e <code>single branch</code> vs <code>multi branch</code>). An <code>Author</code> of a channel will be 
+able to set the access restrictions to branches within a channel structure, as well as accepting and 
+managing user Subscription messages. </p>
+<h2 id="subscribers"><a class="header" href="#subscribers">Subscribers</a></h2>
+<p>A channel <code>Subscriber</code> is any user within a channel that is not the Author. A subscriber can be generated
+independently without verification by an <code>Author</code>, but in order to write to a branch, or to process any 
+private streams, they will be required to subscribe to the channel, and have the Author accept/process 
+that subscription. A Subscriber may also use Pre-Shared Keys instead of subscription as a method of 
+interacting with a stream without conducting a subscription process. </p>
+<h2 id="branching"><a class="header" href="#branching">Branching</a></h2>
+<p>Branches can be defined as any sequential grouping of messages that is spawned linked to the <code>Announcement</code> 
+message. These branches will typically be generated with either a <code>signed packet</code> or <code>keyload</code> message for 
+public and private streaming respectively. A channel can assume two different forms: </p>
+<ul>
+<li><code>single branch</code> - A linear sequencing of messages (similar to a <code>MAM</code> stream) with each message linked to 
+the previous one </li>
+<li><code>multi branch</code> - A sequencing of messages that does not rely on sequential linking of messages</li>
+</ul>
+<p>When generating a channel, the Author will decide whether the channel will use single branching or multi-
+branching, this will inform the Streams instance in which way it should perform sequencing. Subscribers will 
+also be informed as they process the root message (<code>Announcement</code>) so their instances know the appropriate 
+sequencing order as well.</p>
+<h2 id="keyloads"><a class="header" href="#keyloads">Keyloads</a></h2>
+<p>A <code>Keyload</code> message is an access restriction/control message that allows the Author to specify who should be 
+able to decrypt any messages that are attached following it. There are two ways to specify access when generating 
+a <code>Keyload</code>: </p>
+<ul>
+<li>Subscriber Public Keys</li>
+<li>Pre-shared Keys </li>
+</ul>
+<h4 id="public-keys"><a class="header" href="#public-keys">Public Keys</a></h4>
+<p>During the processing of subscription messages, public keys are masked and provided to the Author to be stored on 
+their instance. That Author can then specify which of these users will be able to access subsequent messages by 
+including that public key in the <code>Keyload</code>.</p>
+<h4 id="pre-shared-keys-pkis"><a class="header" href="#pre-shared-keys-pkis">Pre-Shared Keys (PKI's)</a></h4>
+<p>A predefined key shared amongst users offline. These keys can be used to provide access restrictions to a stream 
+without the need for a subscription process. </p>
+<p><em><em>Note: The security and transportation of this offline key must be ensured by the user implementations</em></em></p>
+<h2 id="sequencing"><a class="header" href="#sequencing">Sequencing</a></h2>
+<p>Sequencing is the methodology built within streams to allow message identifiers to be sequentially generated regardless 
+of the shape of the channel. Messages are identified by an <code>indexation</code> position within the tangle, and they are 
+generated using a combination of these pieces of information:</p>
+<ul>
+<li>Application Instance (Channel Identifier)</li>
+<li>Public Key (Of the sender)</li>
+<li>Previous message id (The message being linked to)</li>
+<li>Branch No (Identifier for the specific branch)</li>
+<li>Sequencing Number (The sequencing position of the sender)</li>
+</ul>
+<p>As messages are posted to/read from the channel, a local state for the user implementation will update with the message 
+identifier, branch and sequencing numbers for each publishing party. This allows user implementations to derive and 
+search for the next message in the sequence to keep in sync. </p>
+<h4 id="single-branch-sequencing"><a class="header" href="#single-branch-sequencing">Single Branch Sequencing</a></h4>
+<p>In a single branch implementation, each user's sequencing state will be updated to the same state. This means that 
+regardless of th sender, each publisher's state will update the Previous Message Id to the new message link, and the 
+Sequencing Number will be incremented by one. </p>
+<p>Sequence states before Msg1 is sent:</p>
+<pre><code>               Author        Sub1
+Prev Msg Id     Msg0         Msg0 
+Branch No.        0            0
+Seq. No.          2            2       &lt;- Users start from 2, 0 and 1 are reserved for subscriptions and announcements
+</code></pre>
+<p>Msg1 is then sent by Author using the above stated author state...</p>
+<p>Sequence states after Msg1 is sent:</p>
+<pre><code>               Author        Sub1
+Prev Msg Id     Msg1         Msg1 
+Branch No.        0            0
+Seq. No.          3            3     
+</code></pre>
+<p><strong><em>Note:</em></strong> <em>It is recommended that a single branch be used with only a single publisher to avoid out of sync parties from 
+issuing/retrieving messages from an incorrect sequencing combination (i.e. Sub1 sends a message linked to Msg1 and Sub2 
+sends a message linked to that same Msg1 before seeing and registering the message from Sub1, thus forking the stream). 
+Multiple publishers can be used, but it is important to ensure that they do not try to send messages in parallel to 
+avoid this conflict. In the future this may be an enforced limitation on single branch implementations to remove the 
+possibility altogether.</em></p>
+<h4 id="multi-branch-sequencing"><a class="header" href="#multi-branch-sequencing">Multi Branch Sequencing</a></h4>
+<p>In a multi branch implementation, each user's sequencing state will be updated independently after each message is sent. 
+In order to track the individual publisher's linking of messages within a tree-like structure, a secondary message is 
+sent in tandem with every data message. This message is called a sequencing message, and contains the essence necessary 
+for a user to derive the correct message id of a sequenced message. The sequencing messages are issued to an anchored 
+branch generated during the creation of the channel. As a new message is generated by a user, a sequencing message is
+issued to this anchored branch to allow users a reference guide to the location of the issued data packet. </p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iota-streams-libraries"><a class="header" href="#iota-streams-libraries">IOTA Streams libraries</a></h1>
+<p>There are currently available the following official bindings to <code>streams</code>:</p>
+<ul>
+<li><a href="libraries/./rust/">Rust</a> </li>
+<li><a href="libraries/./wasm/">Node.js</a> </li>
+<li><a href="libraries/./python/">Python</a> </li>
+</ul>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
+<p>It is a recommended approach to start your interactions with IOTA on a <code>testnet</code> network. API load balancer: https://api.lb-0.testnet.chrysalis2.com:443</p>
+<p>Network explorer is available at <a href="https://explorer.iota.org/testnet">IOTA Tangle Explorer</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="streams-rust-library"><a class="header" href="#streams-rust-library">Streams Rust Library</a></h1>
+<p>This library is still a WIP </p>
+<h2 id="joining-the-discussion-1"><a class="header" href="#joining-the-discussion-1">Joining the discussion</a></h2>
+<p>If you want to get involved in discussions about this library, or you're looking for support, go to the #streams-discussion channel on <a href="https://discord.iota.org">Discord</a>.</p>
+<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<ul>
+<li><a href="libraries/rust/getting_started.html">Getting Started with streams</a></li>
+<li><a href="libraries/rust/examples.html">Examples</a></li>
+<li><a href="libraries/rust/api_reference.html">API Reference</a></li>
+<li><a href="libraries/rust/troubleshooting.html">Troubleshooting</a></li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started-1"><a class="header" href="#getting-started-1">Getting Started</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="examples-1"><a class="header" href="#examples-1">Examples</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-1"><a class="header" href="#api-reference-1">API Reference</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="troubleshooting-1"><a class="header" href="#troubleshooting-1">Troubleshooting</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="c"><a class="header" href="#c">C</a></h1>
+<p>Streams requires an asynchronous runtime environment to be set (we suggest using <code>tokio</code>). Streams also uses 
+<code>anyhow</code> for error handling, so for ease of use, new projects can use <code>anyhow::Result</code> and <code>anyhow::Error</code> 
+for easier integration. </p>
+<p>If you don't have a rust project setup yet you can create one by running,</p>
+<pre><code>cargo new my-library
+</code></pre>
+<p><strong>Remote</strong>
+Add the following to your <code>Cargo.toml</code> file:</p>
+<pre><code class="language-bash">[dependencies]
+tokio = { version = &quot;1.5.0&quot;, features = [&quot;full&quot;] }
+anyhow = { version = &quot;1.0&quot;, default-features = false }
+iota-streams = { git = &quot;https://github.com/iotaledger/streams&quot;, branch  = &quot;master&quot;}
+</code></pre>
+<p><strong>Local</strong></p>
+<ol>
+<li>
+<p>Clone the streams repository</p>
+<pre><code class="language-bash">git clone https://github.com/iotaledger/streams
+</code></pre>
+</li>
+<li>
+<p>Add the following to your <code>Cargo.toml</code> file:</p>
+<pre><code class="language-bash">[dependencies]
+iota-streams = { version = &quot;1.0.0&quot;, path = &quot;../streams&quot; }
+</code></pre>
+</li>
+</ol>
+<h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
+<p>Once installed, users can implement their author and subscribers and start a new channel.</p>
+<h3 id="author-implementation"><a class="header" href="#author-implementation">Author Implementation</a></h3>
+<pre><code>use iota_streams::app_channels::api::tangle::{Author, ChannelType};
+use iota_streams::app::transport::tangle::client::Client;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let node = &quot;https://chrysalis-nodes.iota.org&quot;;
+    let client = Client::new_from_url(node);
+
+    // Author implementation will set the Channel Type
+    let mut author = Author::new(&quot;AUTHORS_UNIQUE_SEED&quot;, ChannelType::SingleBranch, client);
+    
+    // Start the channel and retrieve the announcement address link
+    let ann_address = author.send_announce()?;   
+
+    // Convert the announcement address to a string to share with others
+    println!(&quot;{}&quot;, ann_address.to_string()); 
+}
+</code></pre>
+<h3 id="subscriber-implementation"><a class="header" href="#subscriber-implementation">Subscriber Implementation</a></h3>
+<pre><code>use iota_streams::app_channels::api::tangle::{Address, Subscriber};
+use iota_streams::app::transport::tangle::client::Client;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let node = &quot;https://chrysalis-nodes.iota.org&quot;;
+    let client = Client::new_from_url(node);
+
+    // Subscriber implementation does not need to specify a channel type, it will be 
+    // parsed from the announcement message
+    let mut subscriber = Subscriber::new(&quot;SUBSCRIBER_UNIQUE_SEED&quot;, client);
+    
+    // Create Address object from announcement address string
+    let ann_address = Address::from_str(&quot;Announcement link address provided by author&quot;)?;   
+
+    // Process the announcement message
+    subscriber.receive_announcement(ann_address)?;
+}
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>From here you can now begin subscribing users to the channel and generating branches to specify access control 
+for publishers/readers via <code>Keyload</code> messages.</p>
+<h3 id="subscription"><a class="header" href="#subscription">Subscription</a></h3>
+<p>Subscribers generate their <code>Subscribe</code> messages linked to a channel <code>Announce</code> message. The link of this message 
+should then be provided to the <code>Author</code> for processing to include the users public key for access control and 
+validation purposes.</p>
+<p>Example: </p>
+<pre><code>Subscriber: 
+// Send subscription message
+let sub_link = subscriber.send_subscribe(&amp;ann_address)?;
+// Provide this link to the author
+println!(&quot;{}&quot;, sub_link.to_string());
+</code></pre>
+<pre><code>Author: 
+// Process subscriber link 
+let sub_link = Address::from_str(&quot;Sub link provided by desired subscriber&quot;)?;
+author.receive_subscribe(&amp;sub_link)?;
+</code></pre>
+<h3 id="keyloads-1"><a class="header" href="#keyloads-1">Keyloads</a></h3>
+<p><code>Keyload</code> messages are used as an access control mechanism for a branch. A random key is generated and masked within the 
+message using the public keys or <code>Psk</code>'s included in them. This allows the <code>Author</code> to specify which channel 
+participants have access to which branches. There are 2 ways to send a keyload: </p>
+<ol>
+<li><code>send_keyload(&amp;Address, &amp;Vec&lt;PskId&gt;, &amp;Vec&lt;PublicKey&gt;)</code> - In this function you need to specify:
+<ul>
+<li>the message link that the <code>Keyload</code> message will be attached to (for generating new branches, this should be the 
+<code>Announce</code> message) </li>
+<li>a slice containing the <code>PskId</code>'s of the Pre-Shared Keys intended to be included </li>
+<li>a slice containing the <code>ed25519::PublicKey</code>'s of each <code>Subscriber</code> that is meant to be granted access </li>
+</ul>
+</li>
+<li><code>send_keyload_for_everyone(&amp;Address)</code> - In this function you only need to specify the message link that the <code>Keyload</code> 
+will be attaching to. The <code>Keyload</code> will be sent including all stored <code>PSK</code>'s and all stored <code>Subscriber</code> public keys </li>
+</ol>
+<p>Example: </p>
+<pre><code>// Send Keyload for everyone (starting a new branch) 
+author.send_keyload_for_everyone(&amp;announcement_link)?;
+
+// Send Keyload including Pre Shared Key 2 
+author.send_keyload(&amp;announcement_link, &amp;vec![PskId2], &amp;vec![])?;
+
+// Send Keyload for Subscriber 3
+author.send_keyload(&amp;announcement_link, &amp;vec![], &amp;vec![subscriber_3_pub_key])?;
+</code></pre>
+<h3 id="pre-shared-keys"><a class="header" href="#pre-shared-keys">Pre-Shared Keys</a></h3>
+<p>As an alternative to subscribing via public key exchange, an <code>Author</code> may specify access control through the use of 
+a Pre-Shared Key (<code>PSK</code>). A <code>PSK</code> is a 32 byte array containing a secret key shared outside of the streams instance 
+that can be used to specify access through a <code>Keyload</code> message. If an <code>Author</code> issues a <code>Keyload</code> with a <code>PSK</code> included, 
+and a <code>Subscriber</code> reads this message with the same <code>PSK</code> stored within itself, then the <code>Subscriber</code> can participate in 
+the proceeding branch without being subscribed to the channel. </p>
+<p>Example: </p>
+<pre><code>// Create a random key (for example) and make the Psk from it
+let key = rand::thread_rng().gen::&lt;[u8; 32]&gt;();
+let psk = iota_streams::core::psk::Psk::clone_from_slice(&amp;key);
+
+// Store the psk and retrieve the pskid
+let pskid = author.store_psk(psk.clone());
+
+// Create a keyload with the psk included
+let keyload_link = author.send_keyload(&amp;prev_msg_link, &amp;vec![pskid], &amp;vec![])?;
+
+// Store the same psk in subscriber 
+let _sub_pskid = subscriber.store_psk(psk);
+
+// Process keyload message from subscriber end
+subscriber.receive_keyload(&amp;keyload_link)?;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<p>A list of example implementations can be found <a href="https://github.com/iotaledger/streams-examples">here</a></p>
+<p>Additionally there are a couple of local examples present <a href="libraries/rust/../../../examples">here</a>.
+To run these examples simply update the <code>.env</code> file with the node url you would like 
+to use, and run the command: </p>
+<pre><code>cargo run --release
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
+<p>Users are broken down into two types: <code>Author</code> and <code>Subscriber</code>. An <code>Author</code> is the user 
+that generates the channel, accepts subscription requests and can perform access granting 
+and restriction methods. A <code>Subscriber</code> is an instance that can attach to a channel to read 
+from and write to depending on the access privileges they've been granted. </p>
+<p>You can generate the api reference with:</p>
+<pre><code>cargo doc --document
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h1>
+<h2 id="join-the-discussion"><a class="header" href="#join-the-discussion">Join the discussion</a></h2>
+<p>If you are looking for support or troubleshooting with this library, go to the #streams-dev channel on <a href="https://discord.iota.org">Discord</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="streams-wasm-bindings"><a class="header" href="#streams-wasm-bindings">Streams WASM Bindings</a></h1>
+<p>This library is still a WIP </p>
+<h2 id="joining-the-discussion-2"><a class="header" href="#joining-the-discussion-2">Joining the discussion</a></h2>
+<p>If you want to get involved in discussions about this library, or you're looking for support, go to the #streams-discussion channel on <a href="https://discord.iota.org">Discord</a>.</p>
+<h2 id="overview-2"><a class="header" href="#overview-2">Overview</a></h2>
+<ul>
+<li><a href="libraries/wasm/getting_started.html">Getting Started with streams WASM bindings</a></li>
+<li><a href="libraries/wasm/examples.html">Examples</a></li>
+<li><a href="libraries/wasm/api_reference.html">API Reference</a></li>
+<li><a href="libraries/wasm/troubleshooting.html">Troubleshooting</a></li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started-2"><a class="header" href="#getting-started-2">Getting Started</a></h1>
+<p>The WASM bindings allow for you to build a Streams API for web applications and nodejs. 
+The streams instance underlying the bindings is built with the <code>wasm-client</code> flag to 
+ensure a compatible client interface using the <code>iota.rs iota-client</code> crate. </p>
+<p>Before building anything you'll need to make sure you have <code>npm</code> installed on your 
+machine.</p>
+<p>To build the library, first make sure you're in the wasm directory:
+<code>cd bindings/wasm</code> and run <code>npm install</code> to sync up your dependencies. </p>
+<p>For building the nodejs compatible api, run:</p>
+<pre><code class="language-bash">npm run build:node  &lt;- Builds to wasm-node/iota_streams_wasm
+</code></pre>
+<p>And for building the web compatible api, run:</p>
+<pre><code class="language-bash">npm run build:web  &lt;- Builds to wasm-web/iota_streams_wasm
+</code></pre>
+<h3 id="starting-a-channel"><a class="header" href="#starting-a-channel">Starting a Channel</a></h3>
+<p>Once the package has been built, you can pull it into a script file like so: </p>
+<pre><code class="language-javascript">const streams = require(&quot;./wasm-node/iota_streams_wasm&quot;);
+
+let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
+// Options include: (node-url, depth, local pow, # of threads)
+let options = new streams.SendOptions(node, 3, true, 1);
+
+// Author generated with: (Seed, Options, Multi-branching flag)
+let auth = new streams.Author(&quot;Unique Seed Here&quot;, options, false);
+
+// Response formatting: { link, sequence link, msg }
+let response = await auth.clone().send_announce();
+let ann_link = response.get_link();
+console.log(&quot;Channel Announcement at: &quot;, ann_link.to_string());
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="examples-1"><a class="header" href="#examples-1">Examples</a></h1>
+<p>An overview example of the available api tools can be found <a href="libraries/wasm/../../../bindings/wasm/examples/node.js">here</a>.
+The general API is simply an abstraction over the rust library, so the examples found 
+<a href="libraries/wasm/../rust/examples.html">here</a> still apply (with some minor modifications, see: <a href="libraries/wasm/api_reference.html">api_reference</a>)</p>
+<h2 id="core-functionality"><a class="header" href="#core-functionality">Core Functionality</a></h2>
+<h3 id="author-generation"><a class="header" href="#author-generation">Author Generation</a></h3>
+<p>Create an Author and generate a new channel:</p>
+<pre><code class="language-javascript">let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
+let options = new streams.SendOptions(node, 3, true, 1);
+let multi_branching = false;
+let auth = new streams.Author(&quot;Unique Seed&quot;, options, multi_branching);
+
+let response = await auth.clone().send_announce();
+let ann_link = response.get_link();
+// Link used by subscribers to attach to instance
+console.log(&quot;Announced at: &quot;, ann_link.to_string());
+</code></pre>
+<h3 id="subscriber-generation"><a class="header" href="#subscriber-generation">Subscriber Generation</a></h3>
+<p>Create a Subscriber and attach to a channel:</p>
+<pre><code class="language-javascript">let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
+let options = new streams.SendOptions(node, 3, true, 1);
+let sub = new streams.Subscriber(&quot;Unique Seed&quot;, options);
+
+let ann_link = streams.Address.from_str(&quot;AnnouncementLink:Here&quot;);
+await sub.clone().receive_announcement();
+</code></pre>
+<h3 id="subscription-1"><a class="header" href="#subscription-1">Subscription</a></h3>
+<p>Subscriber sends a subscription message:</p>
+<pre><code class="language-javascript">let response = sub.clone().send_subscribe(ann_link);
+let sub_link = response.get_link();
+// Link to be provided to the Author for subscription
+console.log(&quot;Subscription link: &quot;, sub_link.to_string());
+</code></pre>
+<p>Author accepts and processes subscription: </p>
+<pre><code class="language-javascript">let sub_link = streams.Address.from_str(&quot;SubLink:Here&quot;);
+await author.clone().receive_subscribe(sub_link);
+</code></pre>
+<h3 id="keyload"><a class="header" href="#keyload">Keyload</a></h3>
+<p>Author sends a keyload for all participants in the channel:</p>
+<pre><code class="language-javascript">let response = author.clone().send_keyload_for_everyone(ann_link);
+let keyload_link = response.get_link();
+// Keyload message can now act as starting point for a protected branch
+console.log(&quot;Keyload link for everyone: &quot;, keyload_link.to_string());
+</code></pre>
+<p>Author sends a keyload for just one subscriber in the channel:</p>
+<pre><code class="language-javascript">let response = author.clone().send_keyload(ann_link, [], [&quot;SubA_PublicKey&quot;]);
+let sub_A_keyload_link = response.get_link();
+// Keyload message can now act as starting point for a protected branch
+console.log(&quot;Keyload link for SubA: &quot;, sub_A_keyload_link.to_string());
+</code></pre>
+<h3 id="sending-messages"><a class="header" href="#sending-messages">Sending Messages</a></h3>
+<p>Messages are required to be linked to a previous message that the user had access to. 
+In a single branch implementation this means the latest message in the branch, in multi
+branch implementations, this can mean any message in a branch that they have had access 
+to.</p>
+<p><em>Note: In a multi publisher implementation (i.e. multiple publishers in a single branch),
+it is required that each publisher make sure to sync their state before publishing to ensure 
+that the instance stays in sync with the other publishers</em></p>
+<pre><code class="language-javascript">await sub.clone().sync_state();
+let masked_payload = to_bytes(&quot;Masked Payload&quot;) &lt;- Payloads must be converted to bytes
+let public_payload = to_bytes(&quot;Public Payload&quot;)
+
+let response = subA.clone().send_signed_packet(
+    sub_A_keyload_link,
+    public_payload,
+    masked_payload
+);
+let msg_link = resposne.get_link();
+console.log(&quot;New message sent by Sub A at: &quot;, msg_link.to_string());
+</code></pre>
+<h3 id="message-fetching"><a class="header" href="#message-fetching">Message Fetching</a></h3>
+<h4 id="forward"><a class="header" href="#forward">Forward</a></h4>
+<p>When new messages are available to retrieve from the channel, you can fetch the next 
+message sent by each publisher like so:</p>
+<pre><code class="language-javascript">let next_msgs = sub.clone().fetch_next_msgs();
+
+for (var i = 0; i &lt; next_msgs.length; i++) {
+    console.log(&quot;Found a message...&quot;);
+    console.log(
+      &quot;Public: &quot;,
+      from_bytes(next_msgs[i].get_message().get_public_payload()),
+      &quot;\tMasked: &quot;,
+      from_bytes(next_msgs[i].get_message().get_masked_payload())
+    );
+}
+</code></pre>
+<p>If no new messages are present, the returned array will be empty.</p>
+<p>You can also fetch all previous messages:</p>
+<h4 id="backwards"><a class="header" href="#backwards">Backwards</a></h4>
+<pre><code class="language-javascript">let num_messages = 10;
+let prev_msgs = sub.clone().fetch_prev_msgs(latest_msg_link, num_messages);
+
+for (var i = 0; i &lt; prev_msgs.length; i++) {
+    console.log(&quot;Found a message...&quot;);
+    console.log(
+      &quot;Public: &quot;,
+      from_bytes(prev_msgs[i].get_message().get_public_payload()),
+      &quot;\tMasked: &quot;,
+      from_bytes(prev_msgs[i].get_message().get_masked_payload())
+    );
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-1"><a class="header" href="#api-reference-1">API Reference</a></h1>
+<h2 id="contents"><a class="header" href="#contents">Contents</a></h2>
+<p>The API is spread out across three categories: </p>
+<ul>
+<li><a href="libraries/wasm/api_reference.html#Author">Author</a></li>
+<li><a href="libraries/wasm/api_reference.html#Subscriber">Subscriber</a></li>
+<li><a href="libraries/wasm/api_reference.html#Types">Types</a></li>
+</ul>
+<h3 id="author"><a class="header" href="#author">Author</a></h3>
+<p>Main user implementation of a Channel. Generates the channel, processes subscriptions 
+and </p>
+<h4 id="newseed-options-multi_branching-author"><a class="header" href="#newseed-options-multi_branching-author">new(seed, options, multi_branching): Author</a></h4>
+<p>Generates an Author instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td>options</td><td><code>SendOptions</code></td><td>Options for Client</td></tr>
+<tr><td>multi_branching</td><td><code>bool</code></td><td>Channel Type</td></tr>
+<tr><td><strong>Returns:</strong> An Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_clientclient-seed-multi_branching-author"><a class="header" href="#from_clientclient-seed-multi_branching-author">from_client(client, seed, multi_branching): Author</a></h4>
+<p>Create an Author instance from a client</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="libraries/wasm/api_reference.html#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td>multi_branching</td><td><code>bool</code></td><td>Channel Type</td></tr>
+<tr><td><strong>Returns:</strong> An Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="importclient-bytes-password-author"><a class="header" href="#importclient-bytes-password-author">import(client, bytes, password): Author</a></h4>
+<p>Import an Author instance from an encrypted binary array</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="libraries/wasm/api_reference.html#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>bytes</td><td><code>Uint8Array</code></td><td>Exported binary of author</td></tr>
+<tr><td>password</td><td><code>string</code></td><td>Key to decrypt binary</td></tr>
+<tr><td><strong>Returns:</strong> A recovered Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="exportpassword-uint8array"><a class="header" href="#exportpassword-uint8array">export(password): Uint8Array</a></h4>
+<p>Export an Author instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>password</td><td><code>string</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Binary array representing an encrypted state of the author.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="clone-author"><a class="header" href="#clone-author">clone(): Author</a></h4>
+<p>Generate a copy of the Author instance for consumption by asynchronous functions</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A consumable Author instance for functions.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="channel_address-string"><a class="header" href="#channel_address-string">channel_address(): string</a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Channel Address for user generated channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="is_multi_branching-bool"><a class="header" href="#is_multi_branching-bool">is_multi_branching(): bool</a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Boolean representing the channel type: false=single branch, true=multi branch.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_public_key-string"><a class="header" href="#get_public_key-string">get_public_key(): string</a></h4>
+<p>Retrieve the Author public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Author public key in hex representation.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="the-following-functions-require-authorclone-to-use-as-they-consume-the-instance"><a class="header" href="#the-following-functions-require-authorclone-to-use-as-they-consume-the-instance">The following functions require author.clone() to use, as they consume the instance</a></h4>
+<h4 id="async---send_announce-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---send_announce-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> send_announce(): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send an announcement message, initialising the channel </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the announcement message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_keyload_for_everyonelink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---send_keyload_for_everyonelink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> send_keyload_for_everyone(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a keyload message for all subscribed participants in the channel, linked to a previous message 
+(usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the keyload message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_keyloadlink-psk_ids-sig_pks-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---send_keyloadlink-psk_ids-sig_pks-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> send_keyload(link, psk_ids, sig_pks): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a keyload message for specified subscribers and pre shared keys in the channel, linked to a previous 
+message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>psk_ids</td><td><a href="libraries/wasm/api_reference.html#PskIds"><code>PskIds</code></a></td><td>Array of PskId's for included subscribers</td></tr>
+<tr><td>sig_pks</td><td><a href="libraries/wasm/api_reference.html#PublicKeys"><code>PublicKeys</code></a></td><td>Array of Public Keys for included subscribers</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the keyload message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_tagged_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---send_tagged_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> send_tagged_packet(link, public_payload, masked_payload): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a tagged packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_signed_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---send_signed_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> send_signed_packet(link, public_payload, masked_payload): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a signed packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_subscribelink"><a class="header" href="#async---receive_subscribelink"><em>async -</em> receive_subscribe(link)</a></h4>
+<p>Process a subscription message by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of subscription message</td></tr>
+</tbody></table>
+<h4 id="async---receive_tagged_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---receive_tagged_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> receive_tagged_packet(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_signed_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---receive_signed_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> receive_signed_packet(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_sequencelink-a-hreflibrarieswasmapi_referencehtmladdressaddressa"><a class="header" href="#async---receive_sequencelink-a-hreflibrarieswasmapi_referencehtmladdressaddressa"><em>async -</em> receive_sequence(link): <a href="libraries/wasm/api_reference.html#Address">Address</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> The address link of the sequenced message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---receive_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> receive_msg(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of the message to be fetched</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---sync_state"><a class="header" href="#async---sync_state"><em>async -</em> sync_state()</a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the user state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+</tbody></table>
+<h4 id="async---fetch_next_msgs-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---fetch_next_msgs-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> fetch_next_msgs(): Array&lt;<a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---gen_next_msg_ids-arraya-hreflibrarieswasmapi_referencehtmlnextmsgidnextmsgida"><a class="header" href="#async---gen_next_msg_ids-arraya-hreflibrarieswasmapi_referencehtmlnextmsgidnextmsgida"><em>async -</em> gen_next_msg_ids(): Array&lt;<a href="libraries/wasm/api_reference.html#NextMsgId">NextMsgId</a>&gt;</a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of NextMsgId wrappers for each publisher in the channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="store_pskpsk-string"><a class="header" href="#store_pskpsk-string">store_psk(psk): String</a></h4>
+<p>Store a Pre Shared Key (Psk) and retrieve the Pre Shared Key Id (PskId) for use in keyload messages 
+| Param           | Type                          | Description                         |
+| --------------- | ----------------------------- | ----------------------------------- |
+| psk             | String                        | Pre shared key in string format     |</p>
+<p><strong>Returns:</strong> A PskId String representing the Psk in store.</p>
+<h3 id="subscriber"><a class="header" href="#subscriber">Subscriber</a></h3>
+<p>Additional user implementations of a Channel. Can publish and read from public branches, and 
+branches that have been restricted by keyload messages that contain their public key. </p>
+<h4 id="newseed-options-subscriber"><a class="header" href="#newseed-options-subscriber">new(seed, options): Subscriber</a></h4>
+<p>Generates a Subscriber instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td>options</td><td><code>SendOptions</code></td><td>Options for Client</td></tr>
+<tr><td><strong>Returns:</strong> A Subscriber instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_clientclient-seed-subscriber"><a class="header" href="#from_clientclient-seed-subscriber">from_client(client, seed): Subscriber</a></h4>
+<p>Create a Subscriber instance from a client</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="libraries/wasm/api_reference.html#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>seed</td><td><code>string</code></td><td>Unique user seed</td></tr>
+<tr><td><strong>Returns:</strong> A Subscriber instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="importclient-bytes-password-subscriber"><a class="header" href="#importclient-bytes-password-subscriber">import(client, bytes, password): Subscriber</a></h4>
+<p>Import a Subscriber instance from an encrypted binary array</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>client</td><td><a href="libraries/wasm/api_reference.html#Client"><code>Client</code></a></td><td>A Client Instance</td></tr>
+<tr><td>bytes</td><td><code>Uint8Array</code></td><td>Exported binary of author</td></tr>
+<tr><td>password</td><td><code>string</code></td><td>Key to decrypt binary</td></tr>
+<tr><td><strong>Returns:</strong> A recovered Subscriber instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="exportpassword-uint8array-1"><a class="header" href="#exportpassword-uint8array-1">export(password): Uint8Array</a></h4>
+<p>Export a Subscriber instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>password</td><td><code>string</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Binary array representing an encrypted state of the subscriber.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="clone-subscriber"><a class="header" href="#clone-subscriber">clone(): Subscriber</a></h4>
+<p>Generate a copy of the Subscriber instance for consumption by asynchronous functions</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A consumable Subscriber instance for functions.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="channel_address-string-1"><a class="header" href="#channel_address-string-1">channel_address(): string</a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Channel Address for user generated channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="is_multi_branching-bool-1"><a class="header" href="#is_multi_branching-bool-1">is_multi_branching(): bool</a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Boolean representing the channel type: false=single branch, true=multi branch.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_public_key-string-1"><a class="header" href="#get_public_key-string-1">get_public_key(): string</a></h4>
+<p>Retrieve the Subscriber public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Subscriber public key in hex representation.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="is_registered-bool"><a class="header" href="#is_registered-bool">is_registered(): bool</a></h4>
+<p>Check if the subscriber instance has processed a channel announcement. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Boolean representing if the subscriber instance has processed a channel announcement correctly.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="unregister"><a class="header" href="#unregister">unregister()</a></h4>
+<p>Unregister a subscriber instance from a channel. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+</tbody></table>
+<h4 id="the-following-functions-require-subscriberclone-to-use-as-they-consume-the-instance"><a class="header" href="#the-following-functions-require-subscriberclone-to-use-as-they-consume-the-instance">The following functions require subscriber.clone() to use, as they consume the instance</a></h4>
+<h4 id="async---send_subscribelink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---send_subscribelink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> send_subscribe(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a subscription message attached to an announcement message link. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of announcement message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the subscribe message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_tagged_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---send_tagged_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> send_tagged_packet(link, public_payload, masked_payload): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a tagged packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---send_signed_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---send_signed_packetlink-public_payload-masked_payload-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> send_signed_packet(link, public_payload, masked_payload): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Send a signed packet message linked to a previous message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Byte array of public payload for message</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Byte array of masked payload for message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_announcementlink"><a class="header" href="#async---receive_announcementlink"><em>async -</em> receive_announcement(link)</a></h4>
+<p>Process an announcement message and register the channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of the announcement message</td></tr>
+</tbody></table>
+<h4 id="async---receive_keyloadlink-bool"><a class="header" href="#async---receive_keyloadlink-bool"><em>async -</em> receive_keyload(link): bool</a></h4>
+<p>Receive a keyload by its link and return whether the subscriber has access beyond it or not.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> Boolean representing access to the branch.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_tagged_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---receive_tagged_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> receive_tagged_packet(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the tagged packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_signed_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---receive_signed_packetlink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> receive_signed_packet(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the signed packet message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_sequencelink-a-hreflibrarieswasmapi_referencehtmladdressaddressa-1"><a class="header" href="#async---receive_sequencelink-a-hreflibrarieswasmapi_referencehtmladdressaddressa-1"><em>async -</em> receive_sequence(link): <a href="libraries/wasm/api_reference.html#Address">Address</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> The address link of the sequenced message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---receive_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---receive_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> receive_msg(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address of the message to be fetched</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---sync_state-1"><a class="header" href="#async---sync_state-1"><em>async -</em> sync_state()</a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the user state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+</tbody></table>
+<h4 id="async---fetch_next_msgs-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---fetch_next_msgs-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> fetch_next_msgs(): Array&lt;<a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="store_pskpsk-string-1"><a class="header" href="#store_pskpsk-string-1">store_psk(psk): String</a></h4>
+<p>Store a Pre Shared Key (Psk) and retrieve the Pre Shared Key Id (PskId) for use in keyload messages 
+| Param           | Type                          | Description                         |
+| --------------- | ----------------------------- | ----------------------------------- |
+| psk             | String                        | Pre shared key in string format     |</p>
+<p><strong>Returns:</strong> A PskId String representing the Psk in store.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
+<p>Generic Types and Primitives used in Wasm API:</p>
+<ul>
+<li><a href="libraries/wasm/api_reference.html#Client">Client</a></li>
+<li><a href="libraries/wasm/api_reference.html#SendOptions">SendOptions</a></li>
+<li><a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></li>
+<li><a href="libraries/wasm/api_reference.html#Address">Address</a></li>
+<li><a href="libraries/wasm/api_reference.html#Message">Message</a></li>
+<li><a href="libraries/wasm/api_reference.html#NextMsgId">NextMsgId</a></li>
+</ul>
+<h3 id="client"><a class="header" href="#client">Client</a></h3>
+<p>Transport client for interacting with an Iota node.</p>
+<h4 id="newnode-options-client"><a class="header" href="#newnode-options-client">new(node, options): Client</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>node</td><td><code>string</code></td><td>A node URL</td></tr>
+<tr><td>options</td><td><code>SendOptions</code></td><td>Options for Client</td></tr>
+<tr><td><strong>Returns:</strong> A client instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="sendoptions"><a class="header" href="#sendoptions">SendOptions</a></h3>
+<p>Options for a transport client</p>
+<h4 id="newurl-depth-local_pow-threads-sendoptions"><a class="header" href="#newurl-depth-local_pow-threads-sendoptions">new(url, depth, local_pow, threads): SendOptions</a></h4>
+<p>Create a new set of Send Options for the client</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>url</td><td><code>string</code></td><td>A node URL</td></tr>
+<tr><td>depth</td><td><code>number</code></td><td>Tangle depth for attachment</td></tr>
+<tr><td>local_pow</td><td><code>bool</code></td><td>Perform pow locally</td></tr>
+<tr><td>threads</td><td><code>number</code></td><td>Number of threads for client</td></tr>
+<tr><td><strong>Returns:</strong> Send Options for a client instance.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="userresponse"><a class="header" href="#userresponse">UserResponse</a></h3>
+<p>Response structure containing the details of a sent or retrieved message </p>
+<h4 id="newlink-seq_link-message-userresponse"><a class="header" href="#newlink-seq_link-message-userresponse">new(link, seq_link, message): UserResponse</a></h4>
+<p>Create a new User Response from the return of the rust api for sending and receiving messages.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>Address</code></a></td><td>Address link of message</td></tr>
+<tr><td>seq_link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>Address</code></a></td><td>Sequence Address Link (can be undefined)</td></tr>
+<tr><td>message</td><td><a href="libraries/wasm/api_reference.html#Message"><code>Message</code></a></td><td>Sent or retrieved message (can be undefined)</td></tr>
+<tr><td><strong>Returns:</strong> User Response containing links and message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_stringslink-seq_link-message-userresponse"><a class="header" href="#from_stringslink-seq_link-message-userresponse">from_strings(link, seq_link, message): UserResponse</a></h4>
+<p>Create a new User Response from the return of the rust api for sending and receiving messages, 
+using strings for the link and seq_link inputs.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><code>string</code></td><td>Address string of message</td></tr>
+<tr><td>seq_link</td><td><code>string</code></td><td>Sequence Address string (can be undefined)</td></tr>
+<tr><td>message</td><td><a href="libraries/wasm/api_reference.html#Message"><code>Message</code></a></td><td>Sent or retrieved message (can be undefined)</td></tr>
+<tr><td><strong>Returns:</strong> User Response containing links and message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="copy-userresponse"><a class="header" href="#copy-userresponse">copy(): UserResponse</a></h4>
+<p>Create a copy of the User Response</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A copy of the User Response.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_link-a-hreflibrarieswasmapi_referencehtmladdressaddressa"><a class="header" href="#get_link-a-hreflibrarieswasmapi_referencehtmladdressaddressa">get_link(): <a href="libraries/wasm/api_reference.html#Address">Address</a></a></h4>
+<p>Fetch the link of the retrieved or sent message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The link for the retrieved or sent message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_seq_link-a-hreflibrarieswasmapi_referencehtmladdressaddressa"><a class="header" href="#get_seq_link-a-hreflibrarieswasmapi_referencehtmladdressaddressa">get_seq_link(): <a href="libraries/wasm/api_reference.html#Address">Address</a></a></h4>
+<p>Fetch the sequence link of the retrieved or sent message (Default if there is none).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The link for the retrieved or sent message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_message-a-hreflibrarieswasmapi_referencehtmlmessagemessagea"><a class="header" href="#get_message-a-hreflibrarieswasmapi_referencehtmlmessagemessagea">get_message(): <a href="libraries/wasm/api_reference.html#Message">Message</a></a></h4>
+<p>Fetch the retrieved or sent message (Default if there is none).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The retrieved or sent message.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="address"><a class="header" href="#address">Address</a></h3>
+<p>Streams Address containing the Application Instance and Message Id </p>
+<h4 id="set_addr_idaddr_id"><a class="header" href="#set_addr_idaddr_id">set_addr_id(addr_id)</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr_id</td><td><code>string</code></td><td>Application instance of the channel</td></tr>
+</tbody></table>
+<h4 id="addr_id-string"><a class="header" href="#addr_id-string">addr_id(): string</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Channel Identifier/Application Instance of the Address</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="set_msg_idmsg_id"><a class="header" href="#set_msg_idmsg_id">set_msg_id(msg_id)</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg_id</td><td><code>string</code></td><td>Message Identifier of the message itself</td></tr>
+</tbody></table>
+<h4 id="msg_id-string"><a class="header" href="#msg_id-string">msg_id(): string</a></h4>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> The Message Identifier of the Address</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="from_stringaddress-address"><a class="header" href="#from_stringaddress-address">from_string(address): Address</a></h4>
+<p>Make an Address object from a string representation</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>string</code></td><td>String representation of an Address</td></tr>
+<tr><td><strong>Returns:</strong> An Address object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="to_string-string"><a class="header" href="#to_string-string">to_string(): string</a></h4>
+<p>Return a string representation of an Address object</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> String representation of an Address</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="message"><a class="header" href="#message">Message</a></h3>
+<p>A wrapper for a Rust Streams Message</p>
+<h4 id="default-message"><a class="header" href="#default-message">default(): Message</a></h4>
+<p>Generate a default message object</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A default Message object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="newpk-public_payload-masked_payload-message"><a class="header" href="#newpk-public_payload-masked_payload-message">new(pk, public_payload, masked_payload): Message</a></h4>
+<p>Make a Message object from the optional pk and the public and masked payloads</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>string / undefined</code></td><td>Optional public key for message</td></tr>
+<tr><td>public_payload</td><td><code>Uint8Array</code></td><td>Public payload bytes</td></tr>
+<tr><td>masked_payload</td><td><code>Uint8Array</code></td><td>Masked payload bytes</td></tr>
+<tr><td><strong>Returns:</strong> A Message wrapper object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_pk-string"><a class="header" href="#get_pk-string">get_pk(): string</a></h4>
+<p>Fetch the public key of the Message sender (default if none is presented)</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public key in hex representation of the sender of the message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_public_payload-uint8array"><a class="header" href="#get_public_payload-uint8array">get_public_payload(): Uint8Array</a></h4>
+<p>Fetch the public payload of the Message sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public payload byte array</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_masked_payload-uint8array"><a class="header" href="#get_masked_payload-uint8array">get_masked_payload(): Uint8Array</a></h4>
+<p>Fetch the masked payload of the Message sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Masked payload byte array</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="nextmsgid"><a class="header" href="#nextmsgid">NextMsgId</a></h3>
+<p>A wrapper for a Rust NextMsgId structure</p>
+<h4 id="newpk-msgid-nextmsgid"><a class="header" href="#newpk-msgid-nextmsgid">new(pk, msgid): NextMsgId</a></h4>
+<p>Make a NextMsgId object from the public key and expected next message identifier</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>string</code></td><td>Public key for expected message</td></tr>
+<tr><td>msgid</td><td><a href="libraries/wasm/api_reference.html#Address"><code>Address</code></a></td><td>Address of expected next message</td></tr>
+<tr><td><strong>Returns:</strong> A NextMsgId wrapper object</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_pk-string-1"><a class="header" href="#get_pk-string-1">get_pk(): string</a></h4>
+<p>Fetch the public key of the Message sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public key in hex representation of the sender of the message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_link-address"><a class="header" href="#get_link-address">get_link(): Address</a></h4>
+<p>Fetch the link of the expected next message for that sender</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Public payload byte array</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="pskids"><a class="header" href="#pskids">PskIds</a></h3>
+<p>An array of PskIds representing the Pre Shared Keys that are used in keyload messages.</p>
+<h4 id="new-pskids"><a class="header" href="#new-pskids">new(): PskIds</a></h4>
+<p>Generate a new array of PskIds</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Empty array for PskIds to be added to</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="addpskid"><a class="header" href="#addpskid">add(pskid)</a></h4>
+<p>Add a pskid </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>string</code></td><td>PskId string representation [must be 32 bytes]</td></tr>
+</tbody></table>
+<h4 id="get_ids-arraystring"><a class="header" href="#get_ids-arraystring">get_ids(): Array<string></a></h4>
+<p>Fetch PskIds in string formatting</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Array of PskIds in string formatting</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="publickeys"><a class="header" href="#publickeys">PublicKeys</a></h3>
+<p>An array of PublicKeys representing a set of users.</p>
+<h4 id="new-publickeys"><a class="header" href="#new-publickeys">new(): PublicKeys</a></h4>
+<p>Generate a new array of PublicKeys</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Empty array for PublicKeys to be added to</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="addpk"><a class="header" href="#addpk">add(pk)</a></h4>
+<p>Add a public key string</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>string</code></td><td>Public Key string representation</td></tr>
+</tbody></table>
+<h4 id="get_pks-arraystring"><a class="header" href="#get_pks-arraystring">get_pks(): Array<string></a></h4>
+<p>Fetch Public Keys in string formatting</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> Array of Public Keys in string formatting</td><td></td><td></td></tr>
+</tbody></table>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="troubleshooting-1"><a class="header" href="#troubleshooting-1">Troubleshooting</a></h1>
+<h2 id="join-the-discussion-1"><a class="header" href="#join-the-discussion-1">Join the discussion</a></h2>
+<p>If you are looking for support or troubleshooting with this library, go to the #streams-dev channel on <a href="https://discord.iota.org">Discord</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="streams-c-bindings"><a class="header" href="#streams-c-bindings">Streams C Bindings</a></h1>
+<p>This library is still a WIP </p>
+<h2 id="joining-the-discussion-3"><a class="header" href="#joining-the-discussion-3">Joining the discussion</a></h2>
+<p>If you want to get involved in discussions about this library, or you're looking for support, go to the #streams-discussion channel on <a href="https://discord.iota.org">Discord</a>.</p>
+<h2 id="overview-3"><a class="header" href="#overview-3">Overview</a></h2>
+<ul>
+<li><a href="libraries/c/getting_started.html">Getting Started with streams C bindings</a></li>
+<li><a href="libraries/c/examples.html">Examples</a></li>
+<li><a href="libraries/c/api_reference.html">API Reference</a></li>
+<li><a href="libraries/c/troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started-3"><a class="header" href="#getting-started-3">Getting Started</a></h1>
+<p>The C bindings allow for you to build a Streams API which can be pulled into other languages. 
+The streams instance underlying the bindings is built with the <code>sync-client</code> flag to 
+ensure a compatible client interface using the <code>iota.rs iota-client</code> crate. </p>
+<p>Before building anything you'll need to make sure you have <code>cmake</code> installed on your 
+machine.</p>
+<p>To build the library, first make sure you're in the c directory:</p>
+<pre><code>cd bindings/c
+</code></pre>
+<p>Update the flags in the <code>CMakeLists.txt</code> and run <code>cmake .</code> to 
+prepare the installation files. </p>
+<h4 id="options-for-cmakelliststxt"><a class="header" href="#options-for-cmakelliststxt">Options for CMakeLlists.txt</a></h4>
+<ul>
+<li><code>NO_STD</code>: Enable no_std build, without iota_client (when ON, <code>SYNC_CLIENT</code> isnt supported)</li>
+<li><code>SYNC_CLIENT</code>: Enable sync transport via iota_client, otherwise it's going to be Bucket which can only be used for tests</li>
+<li><code>STATIC</code>: Build static library when ON, otherwise dynamic library</li>
+<li><code>RELEASE</code>: Build in release or debug mode (when ON, builds release, when OFF, build debug)</li>
+</ul>
+<p>To build the library run:</p>
+<pre><code class="language-bash">make
+</code></pre>
+<p>This generates a binary library to be included into a project. This can be either: </p>
+<ul>
+<li><code>iota_streams_c_static</code></li>
+<li><code>iota_streams_c.so</code> (Unix)</li>
+<li><code>iota_streams_c.dll</code> (Windows)</li>
+</ul>
+<p>An example of the header file can be found in <code>include/channels.h</code>.</p>
+<h3 id="starting-a-channel-1"><a class="header" href="#starting-a-channel-1">Starting a Channel</a></h3>
+<p>Once the package has been built, you can pull it into a script file like so: </p>
+<pre><code class="language-c">#include &quot;iota_streams/channels.h&quot;
+#include &lt;stdio.h&gt;
+
+int main()
+{
+ uint8_t multi_branching = 0;
+ char seed[] = &quot;Some unique seed&quot;;
+ char const encoding[] = &quot;utf-8&quot;;
+ const size_t size = 1024;
+ char const *url = &quot;https://chrysalis-nodes.iota.org&quot;;
+ 
+ transport_t *tsp = tsp_client_new_from_url(url);
+ // Author constructor requires: (seed, encoding, payload size, multi branching, transport client)
+ author_t *auth = auth_new(seed, encoding, size, multi_branching, tsp);
+ address_t const *ann_link = auth_send_announce(auth);
+ printf(&quot;Announcement message sent&quot;);
+ 
+ char const *ann_address_inst_str = get_address_inst_str(ann_link);
+ char const *ann_address_id_str = get_address_id_str(ann_link);
+ // Link used by subscribers to attach to instance
+ printf(&quot;Link: %s:%s\n&quot;, ann_address_inst_str, ann_address_id_str);
+ 
+ // Clean up
+ drop_str(ann_address_inst_str);
+ drop_str(ann_address_id_str);
+ drop_address(ann_link);
+ auth_drop(auth);
+ tsp_drop(tsp);
+}
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="examples-2"><a class="header" href="#examples-2">Examples</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-2"><a class="header" href="#api-reference-2">API Reference</a></h1>
+<p>An overview example of the available api tools can be found <a href="libraries/c/../../../bindings/c/main.c">here</a>.
+The general API is simply an abstraction over the rust library, so the examples found 
+<a href="libraries/c/../rust/examples.html">here</a> still apply (with some minor modifications, see: <a href="libraries/c/api_reference.html">api_reference</a>)</p>
+<h2 id="core-functionality-1"><a class="header" href="#core-functionality-1">Core Functionality</a></h2>
+<h3 id="author-generation-1"><a class="header" href="#author-generation-1">Author Generation</a></h3>
+<p>Create an Author and generate a new channel:</p>
+<pre><code class="language-c">uint8_t multi_branching = 0;
+char seed[] = &quot;Some unique seed&quot;;
+char const encoding[] = &quot;utf-8&quot;;
+const size_t size = 1024;
+char const *url = &quot;https://chrysalis-nodes.iota.org&quot;;
+
+transport_t *tsp = tsp_client_new_from_url(url);
+author_t *auth = auth_new(seed, encoding, size, multi_branching, tsp);
+address_t const *ann_link = auth_send_announce(auth);
+printf(&quot;Announcement message sent&quot;);
+
+char const *ann_address_inst_str = get_address_inst_str(ann_link);
+char const *ann_address_id_str = get_address_id_str(ann_link);
+// Link used by subscribers to attach to instance
+printf(&quot;Link: %s:%s\n&quot;, ann_address_inst_str, ann_address_id_str);
+
+// Clean up
+drop_str(ann_address_inst_str);
+drop_str(ann_address_id_str);
+drop_address(ann_link);
+auth_drop(auth);
+tsp_drop(tsp);
+</code></pre>
+<h3 id="subscriber-generation-1"><a class="header" href="#subscriber-generation-1">Subscriber Generation</a></h3>
+<p>Create a Subscriber and attach to a channel:</p>
+<pre><code class="language-c">char seed[] = &quot;Some unique seed&quot;;
+char const encoding[] = &quot;utf-8&quot;;
+const size_t size = 1024;
+char const *url = &quot;https://chrysalis-nodes.iota.org&quot;;
+
+transport_t *tsp = tsp_client_new_from_url(url);
+subscriber_t *sub = sub_new(seed, encoding, size, tsp);
+
+address_t const *ann_link = address_from_string(&quot;Announcement:Link&quot;);
+sub_receive_announcement(sub, ann_link);
+
+// Clean up
+drop_address(ann_link);
+sub_drop(sub);
+tsp_drop(tsp);
+</code></pre>
+<h3 id="subscription-2"><a class="header" href="#subscription-2">Subscription</a></h3>
+<p>Subscriber sends a subscription message:</p>
+<pre><code class="language-c">address_t const *sub_link = sub_send_subscribe(sub, ann_link);
+char const *sub_inst_str = get_address_inst_str(ann_link);
+char const *sub_id_str = get_address_id_str(ann_link);
+// Link used by Author to process subscription
+printf(&quot;Link: %s:%s\n&quot;, sub_inst_str, sub_id_str);
+
+// Clean up
+drop_str(sub_inst_str);
+drop_str(sub_id_str);
+drop_address(sub_link);
+</code></pre>
+<p>Author accepts and processes subscription: </p>
+<pre><code class="language-c">address_t const *sub_link = address_from_string(&quot;Subscribe:Link&quot;);
+auth_receive_subscribe(auth, sub_link);
+drop_address(sub_link);
+</code></pre>
+<h3 id="keyload-1"><a class="header" href="#keyload-1">Keyload</a></h3>
+<p>Author sends a keyload for all participants in the channel:</p>
+<pre><code class="language-c">message_links_t keyload_links = auth_send_keyload_for_everyone(auth, ann_link);
+char const *keyload_inst_str = get_address_inst_str(keyload_links.msg_link);
+char const *keyload_id_str = get_address_id_str(keyload_links.msg_link);
+// Keyload message can now act as starting point for a protected branch
+printf(&quot;Link: %s:%s\n&quot;, keyload_inst_str, keyload_id_str);
+
+// Clean up
+drop_str(keyload_inst_str);
+drop_str(keyload_id_str);
+drop_links(keyload_links);
+</code></pre>
+<p>Author sends a keyload for just one subscriber in the channel:</p>
+<pre><code class="language-c">sig_pks_t *sig_pks[sub_pk]
+message_links_t keyload_links = auth_send_keyload(auth, ann_link, NULL, sig_pks);
+char const *keyload_inst_str = get_address_inst_str(keyload_links.msg_link);
+char const *keyload_id_str = get_address_id_str(keyload_links.msg_link);
+// Keyload message can now act as starting point for a protected branch
+printf(&quot;Link: %s:%s\n&quot;, keyload_inst_str, keyload_id_str);
+
+// Clean up
+drop_str(keyload_inst_str);
+drop_str(keyload_id_str);
+drop_links(keyload_links);
+</code></pre>
+<h3 id="sending-messages-1"><a class="header" href="#sending-messages-1">Sending Messages</a></h3>
+<p>Messages are required to be linked to a previous message that the user had access to. 
+In a single branch implementation this means the latest message in the branch, in multi
+branch implementations, this can mean any message in a branch that they have had access 
+to.</p>
+<p><em>Note: In a multi publisher implementation (i.e. multiple publishers in a single branch),
+it is required that each publisher make sure to sync their state before publishing to ensure 
+that the instance stays in sync with the other publishers</em></p>
+<pre><code class="language-c">char const public_payload[] = &quot;A public payload woopeee&quot;;
+char const masked_payload[] = &quot;A masked payload uhu&quot;;
+
+sub_sync_state(sub);
+message_links_t signed_packet_links = sub_send_signed_packet(
+    sub, keyload_links,
+    (uint8_t const *)public_payload, sizeof(public_payload),
+    (uint8_t const *)masked_payload, sizeof(masked_payload)
+);
+
+char const *signed_packet_inst_str = get_address_inst_str(signed_packet_links.msg_link);
+char const *signed_packet_id_str = get_address_id_str(signed_packet_links.msg_link);
+printf(&quot;Signed Packet link: %s:%s\n&quot;, keyload_inst_str, keyload_id_str);
+
+// Clean up
+drop_str(signed_packet_inst_str);
+drop_str(signed_packet_id_str);
+drop_links(signed_packet_links);
+</code></pre>
+<h3 id="message-fetching-1"><a class="header" href="#message-fetching-1">Message Fetching</a></h3>
+<h4 id="forward-1"><a class="header" href="#forward-1">Forward</a></h4>
+<p>When new messages are available to retrieve from the channel, you can fetch the next 
+message sent by each publisher like so:</p>
+<pre><code class="language-c">unwrapped_messages_t const *message_returns = sub_sync_state(subA);
+
+size_t x;
+for(x = 0; x &lt; sizeof(message_returns); x++)
+  {
+    printf(&quot;Found a message...&quot;);
+    packet_payloads_t response = get_indexed_payload(message_returns, x);
+    printf(&quot;Unpacking message...\npublic: '%s' \tmasked: '%s'\n&quot;, response.public_payload.ptr, response.masked_payload.ptr);
+  }
+
+// Clean up
+drop_unwrapped_messages(message_returns);
+</code></pre>
+<p>If no new messages are present, the returned array will be empty.</p>
+<h4 id="backwards-1"><a class="header" href="#backwards-1">Backwards</a></h4>
+<pre><code class="language-c">size_t num_messages = 10;
+unwrapped_messages_t const *prev_msgs = auth_fetch_prev_msgs(auth, latest_msg_link, num_messages);
+printf(&quot;Previous messages retrieved... \n);
+
+size_t x;
+for(x = 0; x &lt; sizeof(message_returns); x++)
+  {
+    printf(&quot;Found a message...&quot;);
+    packet_payloads_t response = get_indexed_payload(message_returns, x);
+    printf(&quot;Unpacking message...\npublic: '%s' \tmasked: '%s'\n&quot;, response.public_payload.ptr, response.masked_payload.ptr);
+  }
+
+// Clean up
+drop_unwrapped_messages(prev_msgs);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iota-streams-c-bindings-api-reference"><a class="header" href="#iota-streams-c-bindings-api-reference">Iota Streams C Bindings API Reference</a></h1>
+<h3 id="author-1"><a class="header" href="#author-1">Author</a></h3>
+<h4 id="auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_new(auth, seed, encoding, payload_length, multi_branching, tsp): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Generates an Author instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
+<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
+<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>tsp</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_recover(auth, seed, announcement, multi_branching, tsp): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Recover an Author instance using the announcement address link and seed.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>announcement</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
+<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>tsp</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> A recovered Author instance for administrating a channel.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_dropuser"><a class="header" href="#auth_dropuser">auth_drop(user)</a></h4>
+<p>Drop an Author instance from memory.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>user</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+</tbody></table>
+<h4 id="auth_importauth-buffer-password-transport-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_importauth-buffer-password-transport-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_import(auth, buffer, password, transport): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Import an Author instance from an encrypted binary array</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
+<tr><td>bytes</td><td><code>buffer_t</code></td><td>Buffer with exported data</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to decrypt binary</td></tr>
+<tr><td>transport</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_exportbuf-user-password-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_exportbuf-user-password-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_export(buf, user, password): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Export an Author instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>buf</td><td><code>buffer_t *</code></td><td>Placeholder for resulting buffer stream of encrypted Author instance</td></tr>
+<tr><td>user</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_channel_addressaddr-user-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_channel_addressaddr-user-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_channel_address(addr, user): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr</td><td><code>channel_address_t const *</code></td><td>Placeholder for resulting channel address object</td></tr>
+<tr><td>user</td><td><code>author_t const *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error Code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_is_multi_branchingflag-user-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_is_multi_branchingflag-user-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_is_multi_branching(flag, user): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>flag</td><td><code>uint8_t *</code></td><td>Placeholder for resulting multi-branching flag: 0=single branch, 1=multi branch</td></tr>
+<tr><td>user</td><td><code>author_t const *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_get_public_keypk-user-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_get_public_keypk-user-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_get_public_key(pk, user): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Retrieve the Author public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>public_key_t const *</code></td><td>Placeholder for resulting Author Public Key</td></tr>
+<tr><td>user</td><td><code>author_t const *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_announceaddr-user-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_send_announceaddr-user-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_send_announce(addr, user): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send an announcement message, initialising the channel </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr</td><td><code>address_t const *</code></td><td>Placeholder for resulting announcement message address</td></tr>
+<tr><td>user</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_keyload_for_everyonelinks-author-link_to-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_send_keyload_for_everyonelinks-author-link_to-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_send_keyload_for_everyone(links, author, link_to): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a keyload message for all subscribed participants in the channel, linked to a previous message 
+(usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the keyload message link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_keyloadlinks-author-link_to-psk_ids-ke_pks-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_send_keyloadlinks-author-link_to-psk_ids-ke_pks-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_send_keyload(links, author, link_to, psk_ids, ke_pks): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a keyload message for specified subscribers and pre shared keys in the channel, linked to a previous 
+message (usually the announcement in a multi branch).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the keyload message link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>psk_ids</td><td><a href="libraries/c/api_reference.html#PskIds"><code>psk_ids_t *</code></a></td><td>Array of PskId's for included subscribers</td></tr>
+<tr><td>ke_pks</td><td><a href="libraries/c/api_reference.html#PublicKeys"><code>ke_pks_t *</code></a></td><td>Array of Public Keys for included subscribers</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_subscribeauthor-link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_receive_subscribeauthor-link-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_receive_subscribe(author, link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Process a subscription message by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of subscription message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_tagged_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_send_tagged_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_send_tagged_packet(links, author, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a tagged packet message linked to a previous message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the tagged packet link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_send_signed_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_send_signed_packetlinks-author-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_send_signed_packet(links, author, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a signed packet message linked to a previous message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the signed packet link and sequence link.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link_to</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_tagged_packetpayloads-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_receive_tagged_packetpayloads-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_receive_tagged_packet(payloads, author, link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="libraries/c/api_reference.html#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the tagged packet message</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_signed_packetpayloads-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_receive_signed_packetpayloads-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_receive_signed_packet(payloads, author, link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="libraries/c/api_reference.html#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the signed packet message</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_sequenceseq-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_receive_sequenceseq-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_receive_sequence(seq, author, link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>seq</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const **</code></a></td><td>The address link of the sequenced message.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of sequence message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_receive_msgumsg-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_receive_msgumsg-author-link-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_receive_msg(umsg, author, link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsg</td><td><a href="libraries/c/api_reference.html#UnwrappedMessage">unwrapped_message_t const *</a></td><td>An Unwrapped Message wrapper around the retrieved message.</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of sequence message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_sync_stateumsgs-author-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_sync_stateumsgs-author-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_sync_state(umsgs, author): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the user state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved publisher messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_fetch_next_msgsumsgs-author-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_fetch_next_msgsumsgs-author-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_fetch_next_msgs(umsgs, author): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved publisher messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_gen_next_msg_idsids-author-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_gen_next_msg_idsids-author-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_gen_next_msg_ids(ids, author): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>ids</td><td><code>next_msg_ids_t const *</code></td><td>Placeholder for resulting NextMsgIds wrapper for expected publisher messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_fetch_statestate-author-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_fetch_statestate-author-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_fetch_state(state, author): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the current user state to see the latest links for each publisher</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>Placeholder for resulting User State wrapper around publisher states within the channel</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_store_pskpskid-author-psk-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_store_pskpskid-author-psk-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_store_psk(pskid, author, psk): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Stores a given Pre Shared Key (Psk) into the Author instance, returning a Pre Shared Key Id (PskId) </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>pskid_t *</code></td><td>Placeholder for resulting PskId object representing the Psk in store</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>psk</td><td><code>char const *</code></td><td>Unique Pre Shared Key</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="subscriber-1"><a class="header" href="#subscriber-1">Subscriber</a></h3>
+<h4 id="sub_newsub-seed-encoding-payload_length-transport-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_newsub-seed-encoding-payload_length-transport-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_new(sub, seed, encoding, payload_length, transport): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Generates a new Subscriber instance </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
+<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
+<tr><td>transport</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_recoversub-seed-announcement-transport-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_recoversub-seed-announcement-transport-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_recover(sub, seed, announcement, transport): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Recover a Subscriber instance using the announcement address link and seed.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
+<tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
+<tr><td>announcement</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
+<tr><td>transport</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_dropuser"><a class="header" href="#sub_dropuser">sub_drop(user)</a></h4>
+<p>Drop a Subscriber instance from memory.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+</tbody></table>
+<h4 id="sub_importsub-buffer-password-transport-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_importsub-buffer-password-transport-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_import(sub, buffer, password, transport): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Import a Subscriber instance from an encrypted binary array </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
+<tr><td>buffer</td><td><code>buffer_t</code></td><td>Buffer with exported data</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to decrypt binary</td></tr>
+<tr><td>transport</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_exportbuf-subscriber-password-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_exportbuf-subscriber-password-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_export(buf, subscriber, password): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Export a Subscriber instance as an encrypted array using a given password</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>buf</td><td><code>buffer_t *</code></td><td>Placeholder for resulting buffer stream of encrypted Subscriber instance</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td>password</td><td><code>char const *</code></td><td>Key to encrypt</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_channel_addressaddr-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_channel_addressaddr-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_channel_address(addr, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Return the channel address of the channel instance. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr</td><td><code>channel_address_t const *</code></td><td>Placeholder for resulting channel address object</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_is_multi_branchingflag-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_is_multi_branchingflag-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_is_multi_branching(flag, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Check if a channel type is single branching or multi branching. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>flag</td><td><code>uint8_t *</code></td><td>Placeholder for resulting multi-branching flag: 0=single branch, 1=multi branch</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_get_public_keypk-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_get_public_keypk-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_get_public_key(pk, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Retrieve the Subscriber public key.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pk</td><td><code>public_key_t const *</code></td><td>Placeholder for resulting Author Public Key</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_is_registeredsubscriber-uint8_t"><a class="header" href="#sub_is_registeredsubscriber-uint8_t">sub_is_registered(subscriber): uint8_t</a></h4>
+<p>Check if subscriber has processed an announcement message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t const *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Uint8 representing if the Subscriber has processed an announcement: 0=false, 1=true.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_unregistersubscriber"><a class="header" href="#sub_unregistersubscriber">sub_unregister(subscriber)</a></h4>
+<p>Unregister the subscriber from a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+</tbody></table>
+<h4 id="sub_receive_announcementsubscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_announcementsubscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_announcement(subscriber, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Process an announcement message by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of announcement message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_send_subscribelink-subscriber-announcement_link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_send_subscribelink-subscriber-announcement_link-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_send_subscribe(link, subscriber, announcement_link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a subscription message, initialising the channel </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const **</code></a></td><td>The address of the subscription message.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>announcement_link</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_send_tagged_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_send_tagged_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_send_tagged_packet(links, subscriber, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a tagged packet message linked to a previous message.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the tagged packet link and sequence link.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>link_to</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_send_signed_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_send_signed_packetlinks-subscriber-link_to-public_payload_ptr-public_payload_size-masked_payload_ptr-masked_payload_size-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_send_signed_packet(links, subscriber, link_to, public_payload_ptr, public_payload_size, masked_payload_ptr, masked_payload_size): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Send a signed packet message linked to a previous message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the signed packet link and sequence link.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>link_to</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t</code></a></td><td>Address of message being linked to</td></tr>
+<tr><td>public_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of public payload pointer</td></tr>
+<tr><td>public_payload_size</td><td><code>size_t</code></td><td>Length of public payload byte array</td></tr>
+<tr><td>masked_payload_ptr</td><td><code>uint8_t const *</code></td><td>Byte array of masked payload pointer</td></tr>
+<tr><td>masked_payload_size</td><td><code>size_t</code></td><td>Length of masked payload byte array</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_keyloadsubscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_keyloadsubscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_keyload(subscriber, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a keyload packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of keyload message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_keyload_from_idslinks-subscriber-next_msg_ids-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_keyload_from_idslinks-subscriber-next_msg_ids-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_keyload_from_ids(links, subscriber, next_msg_ids): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a keyload packet by a set of next msg ids.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>links</td><td><a href="libraries/c/api_reference.html#MessageLinks"><code>message_links_t *</code></a></td><td>Placeholder for resulting Message Links wrapper around the keyload message link and sequence link.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>next_msg_ids</td><td><a href="libraries/c/api_reference.html#NextMsgIds"><code>next_msg_ids_t const *</code></a></td><td>Address of keyload message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_tagged_packetpayloads-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_tagged_packetpayloads-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_tagged_packet(payloads, subscriber, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a tagged packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="libraries/c/api_reference.html#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the tagged packet message</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of tagged packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_signed_packetpayloads-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_signed_packetpayloads-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_signed_packet(payloads, subscriber, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a signed packet by its link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><a href="libraries/c/api_reference.html#PacketPayloads"><code>packet_payloads_t *</code></a></td><td>Placeholder for resulting Packet Payloads wrapper around the signed packet message</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of signed packet message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_sequenceaddress-subscriber-seq_address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_sequenceaddress-subscriber-seq_address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_sequence(address, subscriber, seq_address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a sequence message by its link, and return the address of the sequenced message. </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const **</code></a></td><td>The address link of the sequenced message.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>seq_address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of sequence message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_receive_msgumsg-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_receive_msgumsg-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_receive_msg(umsg, subscriber, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Receive a message generically without knowing its type.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsg</td><td><a href="libraries/c/api_reference.html#UnwrappedMessage">unwrapped_message_t const *</a></td><td>An Unwrapped Message wrapper around the retrieved message.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Address of the message</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_sync_stateumsgs-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_sync_stateumsgs-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_sync_state(umsgs, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Synchronise a publishers state prior to sending another message. Retrieves any other messages from the channel 
+to ensure the subscriber state matches all other publishers.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><a href="libraries/c/api_reference.html#UnwrappedMessages"><code>unwrapped_messages_t const **</code></a></td><td>An Array of UnwrappedMessage wrappers around the retrieved messages.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_next_msgsumsgs-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_fetch_next_msgsumsgs-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_fetch_next_msgs(umsgs, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>umsgs</td><td><a href="libraries/c/api_reference.html#UnwrappedMessages"><code>unwrapped_messages_t const **</code></a></td><td>An Array of UnwrappedMessage wrappers around the retrieved messages.</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_gen_next_msg_idsids-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_gen_next_msg_idsids-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_gen_next_msg_ids(ids, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the next message sent by each publisher (empty array if none are present).</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_statestate-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_fetch_statestate-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_fetch_state(state, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the current subscriber state to see the latest links for each publisher</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>Placeholder for resulting User State wrapper around publisher states within the channel</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_store_pskpskid-subscriber-psk-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_store_pskpskid-subscriber-psk-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_store_psk(pskid, subscriber, psk): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Stores a given Pre Shared Key (Psk) into the Subscriber instance, returning a Pre Shared Key Id (PskId) </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>pskid_t *</code></td><td>Placeholder for resulting PskId object representing the Psk in store</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>psk</td><td><code>char const *</code></td><td>Unique Pre Shared Key</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h2 id="types-1"><a class="header" href="#types-1">Types</a></h2>
+<h3 id="err"><a class="header" href="#err">Err</a></h3>
+<p>Error code</p>
+<table><thead><tr><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td>ERR_OK</td><td>Success, no errors</td></tr>
+<tr><td>ERR_NULL_ARGUMENT</td><td>Null-pointer argument</td></tr>
+<tr><td>ERR_BAD_ARGUMENT</td><td>An invalid argument was given as input</td></tr>
+<tr><td>ERR_OPERATION_FAILED</td><td>Transport, wrap/unwrap operation failed</td></tr>
+</tbody></table>
+<h3 id="transportdetails"><a class="header" href="#transportdetails">TransportDetails</a></h3>
+<h3 id="transportwrap"><a class="header" href="#transportwrap">TransportWrap</a></h3>
+<h4 id="transport_new-transport_t-"><a class="header" href="#transport_new-transport_t-">transport_new(): transport_t *</a></h4>
+<p>Generate a default transport client object (best for testing purposes)</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> A generic transport client wrap</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="transport_droptsp"><a class="header" href="#transport_droptsp">transport_drop(tsp)</a></h4>
+<p>Drop transport client from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>tsp</td><td><code>transport_t *</code></td><td>Transport Client</td></tr>
+</tbody></table>
+<h4 id="transport_client_new_from_urlurl-transport_t-"><a class="header" href="#transport_client_new_from_urlurl-transport_t-">transport_client_new_from_url(url): transport_t *</a></h4>
+<p>Generate a transport client object with a given node url</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>url</td><td><code>char const *</code></td><td>Node Url</td></tr>
+<tr><td><strong>Returns:</strong> A transport client wrapper to communicate with a node</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="transport_get_link_detailsdetails-transport-link-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#transport_get_link_detailsdetails-transport-link-a-hreflibrariescapi_referencehtmlerrerr_ta">transport_get_link_details(details, transport, link): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Retrieved message details for a given message link</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>details</td><td><a href="libraries/c/api_reference.html#TransportDetails"><code>transport_details_t *</code></a></td><td>Placeholder for resulting message details</td></tr>
+<tr><td>transport</td><td><code>transport_t *</code></td><td>Transport Client</td></tr>
+<tr><td>link</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> Error code</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="address-1"><a class="header" href="#address-1">Address</a></h3>
+<h4 id="address_from_stringaddr_str-address_t-"><a class="header" href="#address_from_stringaddr_str-address_t-">address_from_string(addr_str): address_t *</a></h4>
+<p>Create an address object form a string </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>addr_str</td><td><code>char const *</code></td><td>A string representation of link</td></tr>
+<tr><td><strong>Returns:</strong> An Address link</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_address_inst_straddress-char-const-"><a class="header" href="#get_address_inst_straddress-char-const-">get_address_inst_str(address): char const *</a></h4>
+<p>Get the string representation of the Address Application Instance</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the Address Application Instance</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_address_id_straddress-char-const-"><a class="header" href="#get_address_id_straddress-char-const-">get_address_id_str(address): char const *</a></h4>
+<p>Get the string representation of the Address Message Identifier</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the Address Message Identifier</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="get_address_index_straddress-char-const-"><a class="header" href="#get_address_index_straddress-char-const-">get_address_index_str(address): char const *</a></h4>
+<p>Get the string representation of the streams message Tangle Index</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the message Tangle Index</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_addressaddress"><a class="header" href="#drop_addressaddress">drop_address(address)</a></h4>
+<p>Drop an Address wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Address link of message</td></tr>
+</tbody></table>
+<h3 id="channeladdress"><a class="header" href="#channeladdress">ChannelAddress</a></h3>
+<h4 id="get_channel_address_strappinst-char-const-"><a class="header" href="#get_channel_address_strappinst-char-const-">get_channel_address_str(appinst): char const *</a></h4>
+<p>Get the string representation of the Channel Address</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>appinst</td><td><code>channel_address_t const *</code></td><td>Channel Application Instance</td></tr>
+<tr><td><strong>Returns:</strong> A string representation of the Channel Address</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="messagelinks"><a class="header" href="#messagelinks">MessageLinks</a></h3>
+<p>Wrapper for Message containing the message link, and the sequence link (if you are using multi branching)
+| Param           | Type                          | Description                         |
+| --------------- | ----------------------------- | ----------------------------------- |
+| msg_link         | <code>address_t const *</code>          | Message link address                | 
+| seq_link         | <code>address_t const *</code>          | Sequence link address               | </p>
+<h4 id="drop_linksmsg_links"><a class="header" href="#drop_linksmsg_links">drop_links(msg_links)</a></h4>
+<p>Drop a MessageLinks wrapper from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg_links</td><td><code>message_links_t</code></td><td>Message Links Wrapper</td></tr>
+</tbody></table>
+<h3 id="unwrappedmessage"><a class="header" href="#unwrappedmessage">UnwrappedMessage</a></h3>
+<p>A wrapper around a retrieved message</p>
+<h4 id="get_payloadmessage-packet_payloads_t"><a class="header" href="#get_payloadmessage-packet_payloads_t">get_payload(message): packet_payloads_t</a></h4>
+<p>Fetch the payload from an Unwrapped Message wrapper</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>message</td><td><code>unwrapped_message_t const *</code></td><td>Unwrapped Message Wrapper</td></tr>
+<tr><td><strong>Returns:</strong> The PacketPayloads wrapper of the message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_unwrapped_messagemessage"><a class="header" href="#drop_unwrapped_messagemessage">drop_unwrapped_message(message)</a></h4>
+<p>Drop an Unwrapped Message wrapper from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>message</td><td><code>unwrapped_message_t const *</code></td><td>Unwrapped Message Wrapper</td></tr>
+</tbody></table>
+<h3 id="unwrappedmessages"><a class="header" href="#unwrappedmessages">UnwrappedMessages</a></h3>
+<p>An array of <code>UnwrappedMessage</code>'s</p>
+<h4 id="get_indexed_payloadmessages-index-packet_payloads_t"><a class="header" href="#get_indexed_payloadmessages-index-packet_payloads_t">get_indexed_payload(messages, index): packet_payloads_t</a></h4>
+<p>Fetch the payload of the provided index of the Unwrapped Messages wrapper.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>messages</td><td><code>unwrapped_messages_t const *</code></td><td>Unwrapped Message Wrapper</td></tr>
+<tr><td>index</td><td><code>size_t</code></td><td>Index of message in array</td></tr>
+<tr><td><strong>Returns:</strong> The PacketPayloads wrapper of the indexed message</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_unwrapped_messagesmessages"><a class="header" href="#drop_unwrapped_messagesmessages">drop_unwrapped_messages(messages)</a></h4>
+<p>Drop an Unwrapped Messages wrapper from memory</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>messages</td><td><code>unwrapped_messages_t const *</code></td><td>Unwrapped Messages Wrapper</td></tr>
+</tbody></table>
+<h3 id="packetpayloads"><a class="header" href="#packetpayloads">PacketPayloads</a></h3>
+<p>Contains a <code>public_payload</code> byte array and a <code>masked_payload</code> byte array for a streams message</p>
+<h4 id="drop_payloadspayloads"><a class="header" href="#drop_payloadspayloads">drop_payloads(payloads)</a></h4>
+<p>Drop a PacketPayloads wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>payloads</td><td><code>packet_payloads_t</code></td><td>Packet Payloads Wrapper</td></tr>
+</tbody></table>
+<h3 id="publickey"><a class="header" href="#publickey">PublicKey</a></h3>
+<p>An Ed25519 Public Key</p>
+<h4 id="public_key_to_stringpubkey-char-const-"><a class="header" href="#public_key_to_stringpubkey-char-const-">public_key_to_string(pubkey): char const *</a></h4>
+<p>Get a hex string representation of an Ed25519 Public Key</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pubkey</td><td><code>public_key_t *</code></td><td>Ed25519 Public Key</td></tr>
+<tr><td><strong>Returns:</strong> Hex string representation of an Ed25519 Public Key</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="nextmsgids"><a class="header" href="#nextmsgids">NextMsgIds</a></h3>
+<p>A wrapper for a list mapping Public Key strings, and a state cursors for expected next message ids.</p>
+<h4 id="drop_next_msg_idsm"><a class="header" href="#drop_next_msg_idsm">drop_next_msg_ids(m)</a></h4>
+<p>Drop a NextMsgIds wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>next_msg_ids_t const *</code></td><td>A NextMsgId wrapper</td></tr>
+</tbody></table>
+<h3 id="userstate"><a class="header" href="#userstate">UserState</a></h3>
+<p>A wrapper for a list mapping Public Key strings and a state cursor.</p>
+<h4 id="get_link_from_statestate-pub_key-address_t-const-"><a class="header" href="#get_link_from_statestate-pub_key-address_t-const-">get_link_from_state(state, pub_key): address_t const *</a></h4>
+<p>Get the latest link of a specific user by their Ed25519 Public Key</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>User State Wrapper</td></tr>
+<tr><td>pubkey</td><td><code>public_key_t const *</code></td><td>Ed25519 Public Key</td></tr>
+<tr><td><strong>Returns:</strong> Latest address link of the provided user key</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="drop_user_statestate"><a class="header" href="#drop_user_statestate">drop_user_state(state)</a></h4>
+<p>Drop a User State wrapper from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>state</td><td><code>user_state_t const *</code></td><td>A User State wrapper</td></tr>
+</tbody></table>
+<h3 id="strings"><a class="header" href="#strings">strings</a></h3>
+<h4 id="drop_strstring"><a class="header" href="#drop_strstring">drop_str(string)</a></h4>
+<p>Drop a rust allocated string from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>string</td><td><code>char const *</code></td><td>A string object</td></tr>
+</tbody></table>
+<h3 id="publickeys-1"><a class="header" href="#publickeys-1">PublicKeys</a></h3>
+<p>An array of <a href="libraries/c/api_reference.html#PublicKey"><code>PublicKey</code></a>'s</p>
+<h3 id="psk"><a class="header" href="#psk">Psk</a></h3>
+<p>A 32 Byte Pre Shared Key</p>
+<h3 id="pskid"><a class="header" href="#pskid">PskId</a></h3>
+<p>Array of 16 bytes representing the identifier of a 32 byte <a href="libraries/c/api_reference.html#Psk"><code>Psk</code></a></p>
+<h4 id="pskid_as_strpskid"><a class="header" href="#pskid_as_strpskid">pskid_as_str(pskid)</a></h4>
+<p>Drop a rust allocated string from memory </p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>pskid</td><td><code>pskid_t const *</code></td><td>A Pre Shared Key Identifier</td></tr>
+<tr><td><strong>Returns:</strong> String representation of the PskId object</td><td></td><td></td></tr>
+</tbody></table>
+<h3 id="pskids-1"><a class="header" href="#pskids-1">PskIds</a></h3>
+<p>An array of <a href="libraries/c/api_reference.html#PskId"><code>PskId</code></a>'s</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="troubleshooting-2"><a class="header" href="#troubleshooting-2">Troubleshooting</a></h1>
+<h2 id="join-the-discussion-2"><a class="header" href="#join-the-discussion-2">Join the discussion</a></h2>
+<p>If you are looking for support or troubleshooting with this library, go to the #streams-dev channel on <a href="https://discord.iota.org">Discord</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="specifications-document"><a class="header" href="#specifications-document">Specifications document</a></h1>
 <p>The specs doc can be found separate from docs here:
-<a href="http://iotaledger.github.io/streams/specification/Streams_Specification_1_0A.pdf">Spec.pdf</a></p>
+<a href="http://iotaledger.github.io/streams/specification/Streams_Spec_1_0A.pdf">Spec.pdf</a></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="contribute"><a class="header" href="#contribute">Contribute</a></h1>
 
                     </main>
