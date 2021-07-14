@@ -1,6 +1,6 @@
 [package]
-name = "iota_streams_wasm"
-version = "0.0.1"
+name = "streams_wasm"
+version = "1.1.0"
 authors = ["huhn511 <huhn@einfachIOTA.de>", "Vlad Semenov <vlad.semenov@iota.org>", "Dyrell Chapman <dyrell.chapman@iota.org>", "Brord van Wierst <brord@iota.org>"]
 edition = "2018"
 repository = "https://github.com/iotaledger/streams"
