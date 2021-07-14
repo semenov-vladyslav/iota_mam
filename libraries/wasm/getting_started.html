@@ -157,14 +157,14 @@ machine.</p>
 <p>To build the library, first make sure you're in the wasm directory:
 <code>cd bindings/wasm</code> and run <code>npm install</code> to sync up your dependencies. </p>
 <p>For building the nodejs compatible api, run:</p>
-<pre><code class="language-bash">npm run build:node  &lt;- Builds to wasm-node/iota_streams_wasm
+<pre><code class="language-bash">npm run build:node  &lt;- Builds to node/iota_streams_wasm
 </code></pre>
 <p>And for building the web compatible api, run:</p>
-<pre><code class="language-bash">npm run build:web  &lt;- Builds to wasm-web/iota_streams_wasm
+<pre><code class="language-bash">npm run build:web  &lt;- Builds to web/iota_streams_wasm
 </code></pre>
 <h3 id="starting-a-channel"><a class="header" href="#starting-a-channel">Starting a Channel</a></h3>
 <p>Once the package has been built, you can pull it into a script file like so: </p>
-<pre><code class="language-javascript">const streams = require(&quot;./wasm-node/iota_streams_wasm&quot;);
+<pre><code class="language-javascript">const streams = require(&quot;./node/iota_streams_wasm&quot;);
 
 let node = &quot;https://chrysalis-nodes.iota.org/&quot;;
 // Options include: (node-url, depth, local pow, # of threads)
