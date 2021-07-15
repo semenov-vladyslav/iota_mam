@@ -150,24 +150,22 @@
                     <main>
                         <h1 id="iota-streams-c-bindings-api-reference"><a class="header" href="#iota-streams-c-bindings-api-reference">Iota Streams C Bindings API Reference</a></h1>
 <h3 id="author"><a class="header" href="#author">Author</a></h3>
-<h4 id="auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreferrerr_ta"><a class="header" href="#auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreferrerr_ta">auth_new(auth, seed, encoding, payload_length, multi_branching, tsp): <a href="#Err">err_t</a></a></h4>
+<h4 id="auth_newauth-seed-implementation-tsp-a-hreferrerr_ta"><a class="header" href="#auth_newauth-seed-implementation-tsp-a-hreferrerr_ta">auth_new(auth, seed, implementation, tsp): <a href="#Err">err_t</a></a></h4>
 <p>Generates an Author instance </p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
 <tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
-<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
-<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
-<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>implementation</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
 <tr><td>tsp</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
-<h4 id="auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreferrerr_ta"><a class="header" href="#auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreferrerr_ta">auth_recover(auth, seed, announcement, multi_branching, tsp): <a href="#Err">err_t</a></a></h4>
+<h4 id="auth_recoverauth-seed-announcement-implementation-tsp-a-hreferrerr_ta"><a class="header" href="#auth_recoverauth-seed-announcement-implementation-tsp-a-hreferrerr_ta">auth_recover(auth, seed, announcement, implementation, tsp): <a href="#Err">err_t</a></a></h4>
 <p>Recover an Author instance using the announcement address link and seed.</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
 <tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
 <tr><td>announcement</td><td><a href="#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
-<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>implementation</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
 <tr><td>tsp</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
 <tr><td><strong>Returns:</strong> A recovered Author instance for administrating a channel.</td><td></td><td></td></tr>
 </tbody></table>
@@ -319,6 +317,23 @@ to ensure the user state matches all other publishers.</p>
 <tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
+<h4 id="auth_fetch_prev_msgmsg-author-address-a-hreferrerr_ta"><a class="header" href="#auth_fetch_prev_msgmsg-author-address-a-hreferrerr_ta">auth_fetch_prev_msg(msg, author, address): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the previous message sent before the defined message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg</td><td><code>unwrapped_message_t const *</code></td><td>Placeholder for resulting UnwrappedMessage wrapper for retrieved message</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_fetch_prev_msgsmsgs-author-address-max-a-hreferrerr_ta"><a class="header" href="#auth_fetch_prev_msgsmsgs-author-address-max-a-hreferrerr_ta">auth_fetch_prev_msgs(msgs, author, address, max): <a href="#Err">err_t</a></a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td>max</td><td><code>size_t</code></td><td>Maximum number of previous messages to retrieve</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
 <h4 id="auth_gen_next_msg_idsids-author-a-hreferrerr_ta"><a class="header" href="#auth_gen_next_msg_idsids-author-a-hreferrerr_ta">auth_gen_next_msg_ids(ids, author): <a href="#Err">err_t</a></a></h4>
 <p>Fetch the next message sent by each publisher (empty array if none are present).</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
@@ -342,13 +357,11 @@ to ensure the user state matches all other publishers.</p>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
 <h3 id="subscriber"><a class="header" href="#subscriber">Subscriber</a></h3>
-<h4 id="sub_newsub-seed-encoding-payload_length-transport-a-hreferrerr_ta"><a class="header" href="#sub_newsub-seed-encoding-payload_length-transport-a-hreferrerr_ta">sub_new(sub, seed, encoding, payload_length, transport): <a href="#Err">err_t</a></a></h4>
+<h4 id="sub_newsub-seed-transport-a-hreferrerr_ta"><a class="header" href="#sub_newsub-seed-transport-a-hreferrerr_ta">sub_new(sub, seed, transport): <a href="#Err">err_t</a></a></h4>
 <p>Generates a new Subscriber instance </p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
 <tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
-<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
-<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
 <tr><td>transport</td><td><a href="#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
@@ -514,6 +527,23 @@ to ensure the subscriber state matches all other publishers.</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>umsgs</td><td><a href="#UnwrappedMessages"><code>unwrapped_messages_t const **</code></a></td><td>An Array of UnwrappedMessage wrappers around the retrieved messages.</td></tr>
 <tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_prev_msgmsg-subscriber-address-a-hreferrerr_ta"><a class="header" href="#sub_fetch_prev_msgmsg-subscriber-address-a-hreferrerr_ta">sub_fetch_prev_msg(msg, subscriber, address): <a href="#Err">err_t</a></a></h4>
+<p>Fetch the previous message sent before the defined message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg</td><td><code>unwrapped_message_t const *</code></td><td>Placeholder for resulting UnwrappedMessage wrapper for retrieved message</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_prev_msgsmsgs-subscriber-address-max-a-hreferrerr_ta"><a class="header" href="#sub_fetch_prev_msgsmsgs-subscriber-address-max-a-hreferrerr_ta">sub_fetch_prev_msgs(msgs, subscriber, address, max): <a href="#Err">err_t</a></a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved messages</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td>max</td><td><code>size_t</code></td><td>Maximum number of previous messages to retrieve</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
 <h4 id="sub_gen_next_msg_idsids-subscriber-a-hreferrerr_ta"><a class="header" href="#sub_gen_next_msg_idsids-subscriber-a-hreferrerr_ta">sub_gen_next_msg_ids(ids, subscriber): <a href="#Err">err_t</a></a></h4>

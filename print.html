@@ -717,6 +717,19 @@ to ensure the user state matches all other publishers.</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
 </tbody></table>
+<h4 id="async---fetch_prev_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---fetch_prev_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> fetch_prev_msg(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Fetch the previous message sent before the provided message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---fetch_prev_msgslink-max-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><a class="header" href="#async---fetch_prev_msgslink-max-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea"><em>async -</em> fetch_prev_msgs(link, max): Array&lt;<a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td>max</td><td><code>number</code></td><td>Max number of messages to fetch</td></tr>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
 <h4 id="async---gen_next_msg_ids-arraya-hreflibrarieswasmapi_referencehtmlnextmsgidnextmsgida"><a class="header" href="#async---gen_next_msg_ids-arraya-hreflibrarieswasmapi_referencehtmlnextmsgidnextmsgida"><em>async -</em> gen_next_msg_ids(): Array&lt;<a href="libraries/wasm/api_reference.html#NextMsgId">NextMsgId</a>&gt;</a></h4>
 <p>Fetch the next message sent by each publisher (empty array if none are present).</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
@@ -854,6 +867,19 @@ to ensure the user state matches all other publishers.</p>
 <h4 id="async---fetch_next_msgs-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---fetch_next_msgs-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> fetch_next_msgs(): Array&lt;<a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a>&gt;</a></h4>
 <p>Fetch the next message sent by each publisher (empty array if none are present).</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---fetch_prev_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---fetch_prev_msglink-a-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> fetch_prev_msg(link): <a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a></a></h4>
+<p>Fetch the previous message sent before the provided message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---fetch_prev_msgslink-max-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><a class="header" href="#async---fetch_prev_msgslink-max-arraya-hreflibrarieswasmapi_referencehtmluserresponseuserresponsea-1"><em>async -</em> fetch_prev_msgs(link, max): Array&lt;<a href="libraries/wasm/api_reference.html#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="libraries/wasm/api_reference.html#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td>max</td><td><code>number</code></td><td>Max number of messages to fetch</td></tr>
 <tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
 </tbody></table>
 <h4 id="store_pskpsk-string-1"><a class="header" href="#store_pskpsk-string-1">store_psk(psk): String</a></h4>
@@ -1271,24 +1297,22 @@ drop_unwrapped_messages(prev_msgs);
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="iota-streams-c-bindings-api-reference"><a class="header" href="#iota-streams-c-bindings-api-reference">Iota Streams C Bindings API Reference</a></h1>
 <h3 id="author-1"><a class="header" href="#author-1">Author</a></h3>
-<h4 id="auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_newauth-seed-encoding-payload_length-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_new(auth, seed, encoding, payload_length, multi_branching, tsp): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<h4 id="auth_newauth-seed-implementation-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_newauth-seed-implementation-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_new(auth, seed, implementation, tsp): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
 <p>Generates an Author instance </p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
 <tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
-<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
-<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
-<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>implementation</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
 <tr><td>tsp</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
-<h4 id="auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_recoverauth-seed-announcement-multi_branching-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_recover(auth, seed, announcement, multi_branching, tsp): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<h4 id="auth_recoverauth-seed-announcement-implementation-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_recoverauth-seed-announcement-implementation-tsp-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_recover(auth, seed, announcement, implementation, tsp): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
 <p>Recover an Author instance using the announcement address link and seed.</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>auth</td><td><code>author_t *</code></td><td>Placeholder for resulting Author instance</td></tr>
 <tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
 <tr><td>announcement</td><td><a href="libraries/c/api_reference.html#Address"><code>address_t const *</code></a></td><td>Announcement link</td></tr>
-<tr><td>multi_branching</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
+<tr><td>implementation</td><td><code>uint8_t</code></td><td>Channel Type</td></tr>
 <tr><td>tsp</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
 <tr><td><strong>Returns:</strong> A recovered Author instance for administrating a channel.</td><td></td><td></td></tr>
 </tbody></table>
@@ -1440,6 +1464,23 @@ to ensure the user state matches all other publishers.</p>
 <tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
+<h4 id="auth_fetch_prev_msgmsg-author-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_fetch_prev_msgmsg-author-address-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_fetch_prev_msg(msg, author, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the previous message sent before the defined message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg</td><td><code>unwrapped_message_t const *</code></td><td>Placeholder for resulting UnwrappedMessage wrapper for retrieved message</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="auth_fetch_prev_msgsmsgs-author-address-max-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_fetch_prev_msgsmsgs-author-address-max-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_fetch_prev_msgs(msgs, author, address, max): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved messages</td></tr>
+<tr><td>author</td><td><code>author_t *</code></td><td>Author instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td>max</td><td><code>size_t</code></td><td>Maximum number of previous messages to retrieve</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
 <h4 id="auth_gen_next_msg_idsids-author-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#auth_gen_next_msg_idsids-author-a-hreflibrariescapi_referencehtmlerrerr_ta">auth_gen_next_msg_ids(ids, author): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
 <p>Fetch the next message sent by each publisher (empty array if none are present).</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
@@ -1463,13 +1504,11 @@ to ensure the user state matches all other publishers.</p>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
 <h3 id="subscriber-1"><a class="header" href="#subscriber-1">Subscriber</a></h3>
-<h4 id="sub_newsub-seed-encoding-payload_length-transport-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_newsub-seed-encoding-payload_length-transport-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_new(sub, seed, encoding, payload_length, transport): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<h4 id="sub_newsub-seed-transport-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_newsub-seed-transport-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_new(sub, seed, transport): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
 <p>Generates a new Subscriber instance </p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>sub</td><td><code>subscriber_t *</code></td><td>Placeholder for resulting Subscriber instance</td></tr>
 <tr><td>seed</td><td><code>char const *</code></td><td>Unique user seed</td></tr>
-<tr><td>encoding</td><td><code>char const *</code></td><td>Payload encoding</td></tr>
-<tr><td>payload_length</td><td><code>size_t</code></td><td>Payload max length</td></tr>
 <tr><td>transport</td><td><a href="libraries/c/api_reference.html#TransportWrap"><code>transport_t *</code></a></td><td>Transport Client Wrapper</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
@@ -1635,6 +1674,23 @@ to ensure the subscriber state matches all other publishers.</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td>umsgs</td><td><a href="libraries/c/api_reference.html#UnwrappedMessages"><code>unwrapped_messages_t const **</code></a></td><td>An Array of UnwrappedMessage wrappers around the retrieved messages.</td></tr>
 <tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_prev_msgmsg-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_fetch_prev_msgmsg-subscriber-address-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_fetch_prev_msg(msg, subscriber, address): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch the previous message sent before the defined message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msg</td><td><code>unwrapped_message_t const *</code></td><td>Placeholder for resulting UnwrappedMessage wrapper for retrieved message</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="sub_fetch_prev_msgsmsgs-subscriber-address-max-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_fetch_prev_msgsmsgs-subscriber-address-max-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_fetch_prev_msgs(msgs, subscriber, address, max): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>msgs</td><td><code>unwrapped_messages_t const *</code></td><td>Placeholder for resulting UnwrappedMessages wrapper for retrieved messages</td></tr>
+<tr><td>subscriber</td><td><code>subscriber_t *</code></td><td>Subscriber instance</td></tr>
+<tr><td>address</td><td><code>address_t const *</code></td><td>Link of message to start retrieval from</td></tr>
+<tr><td>max</td><td><code>size_t</code></td><td>Maximum number of previous messages to retrieve</td></tr>
 <tr><td><strong>Returns:</strong> Error code.</td><td></td><td></td></tr>
 </tbody></table>
 <h4 id="sub_gen_next_msg_idsids-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta"><a class="header" href="#sub_gen_next_msg_idsids-subscriber-a-hreflibrariescapi_referencehtmlerrerr_ta">sub_gen_next_msg_ids(ids, subscriber): <a href="libraries/c/api_reference.html#Err">err_t</a></a></h4>

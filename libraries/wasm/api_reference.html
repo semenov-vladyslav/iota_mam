@@ -286,6 +286,19 @@ to ensure the user state matches all other publishers.</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
 </tbody></table>
+<h4 id="async---fetch_prev_msglink-a-hrefuserresponseuserresponsea"><a class="header" href="#async---fetch_prev_msglink-a-hrefuserresponseuserresponsea"><em>async -</em> fetch_prev_msg(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Fetch the previous message sent before the provided message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---fetch_prev_msgslink-max-arraya-hrefuserresponseuserresponsea"><a class="header" href="#async---fetch_prev_msgslink-max-arraya-hrefuserresponseuserresponsea"><em>async -</em> fetch_prev_msgs(link, max): Array&lt;<a href="#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td>max</td><td><code>number</code></td><td>Max number of messages to fetch</td></tr>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
 <h4 id="async---gen_next_msg_ids-arraya-hrefnextmsgidnextmsgida"><a class="header" href="#async---gen_next_msg_ids-arraya-hrefnextmsgidnextmsgida"><em>async -</em> gen_next_msg_ids(): Array&lt;<a href="#NextMsgId">NextMsgId</a>&gt;</a></h4>
 <p>Fetch the next message sent by each publisher (empty array if none are present).</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
@@ -423,6 +436,19 @@ to ensure the user state matches all other publishers.</p>
 <h4 id="async---fetch_next_msgs-arraya-hrefuserresponseuserresponsea-1"><a class="header" href="#async---fetch_next_msgs-arraya-hrefuserresponseuserresponsea-1"><em>async -</em> fetch_next_msgs(): Array&lt;<a href="#UserResponse">UserResponse</a>&gt;</a></h4>
 <p>Fetch the next message sent by each publisher (empty array if none are present).</p>
 <table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---fetch_prev_msglink-a-hrefuserresponseuserresponsea-1"><a class="header" href="#async---fetch_prev_msglink-a-hrefuserresponseuserresponsea-1"><em>async -</em> fetch_prev_msg(link): <a href="#UserResponse">UserResponse</a></a></h4>
+<p>Fetch the previous message sent before the provided message link.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td><strong>Returns:</strong> A User Response wrapper around the retrieved message.</td><td></td><td></td></tr>
+</tbody></table>
+<h4 id="async---fetch_prev_msgslink-max-arraya-hrefuserresponseuserresponsea-1"><a class="header" href="#async---fetch_prev_msgslink-max-arraya-hrefuserresponseuserresponsea-1"><em>async -</em> fetch_prev_msgs(link, max): Array&lt;<a href="#UserResponse">UserResponse</a>&gt;</a></h4>
+<p>Fetch a defined number of previous messages in a channel.</p>
+<table><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>link</td><td><a href="#Address"><code>address</code></a></td><td>Address off message to begin fetching from</td></tr>
+<tr><td>max</td><td><code>number</code></td><td>Max number of messages to fetch</td></tr>
 <tr><td><strong>Returns:</strong> An array of User Response wrappers around the retrieved messages.</td><td></td><td></td></tr>
 </tbody></table>
 <h4 id="store_pskpsk-string-1"><a class="header" href="#store_pskpsk-string-1">store_psk(psk): String</a></h4>
