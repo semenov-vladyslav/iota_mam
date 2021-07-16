@@ -37,7 +37,10 @@ use iota_streams::{
 };
 use wasm_bindgen::prelude::*;
 
-use iota_streams::core::psk::PskId;
+use iota_streams::{
+    app::identifier::Identifier,
+    core::psk::PskId,
+};
 use js_sys::Array;
 
 pub type Result<T> = core::result::Result<T, JsValue>;
@@ -256,6 +259,10 @@ impl PskIds {
 #[wasm_bindgen]
 pub struct PublicKeys {
     pub(crate) pks: Vec<PublicKey>,
+}
+
+pub(crate) fn identifier_to_string(id: &Identifier) -> String {
+    hex::encode(&id.to_bytes())
 }
 
 pub(crate) fn public_key_to_string(pk: &PublicKey) -> String {

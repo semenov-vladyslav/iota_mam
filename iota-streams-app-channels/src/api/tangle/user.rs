@@ -1,13 +1,21 @@
-use iota_streams_app::message::{
-    HasLink as _,
-    LinkGenerator,
+use iota_streams_app::{
+    identifier::Identifier,
+    message::{
+        HasLink as _,
+        LinkGenerator,
+    },
 };
 use iota_streams_core::{
     err,
     prelude::Vec,
     prng,
+    psk::{
+        Psk,
+        PskId,
+    },
     try_or,
     Errors::{
+        ChannelDuplication,
         UnknownMsgType,
         UserNotRegistered,
     },
@@ -19,15 +27,8 @@ use crate::{
     api,
     message,
 };
-use iota_streams_core::{
-    psk::{
-        Psk,
-        PskId,
-    },
-    Errors::ChannelDuplication,
-};
 
-type UserImp = api::user::User<DefaultF, Address, LinkGen, LinkStore, PkStore, PskStore>;
+type UserImp = api::user::User<DefaultF, Address, LinkGen, LinkStore, KeyStore>;
 
 const ENCODING: &str = "utf-8";
 const PAYLOAD_LENGTH: usize = 32_000;
@@ -101,9 +102,9 @@ impl<Trans> User<Trans> {
     ///   # Arguments
     ///   * `pk` - ed25519 Public Key of the sender of the message
     ///   * `link` - Address link to be stored in internal sequence state mapping
-    pub fn store_state(&mut self, pk: PublicKey, link: &Address) -> Result<()> {
+    pub fn store_state(&mut self, id: Identifier, link: &Address) -> Result<()> {
         // TODO: assert!(link.appinst == self.appinst.unwrap());
-        self.user.store_state(pk, link.msgid.clone())
+        self.user.store_state(id, link.msgid.clone())
     }
 
     /// Stores the provided link and sequence number to the internal sequencing state for all participants
@@ -121,7 +122,7 @@ impl<Trans> User<Trans> {
     /// Fetches the latest PublicKey -> Cursor state mapping from the implementation, allowing the
     /// user to see the latest messages present from each publisher
     /// [Author, Subscriber]
-    pub fn fetch_state(&self) -> Result<Vec<(PublicKey, Cursor<Address>)>> {
+    pub fn fetch_state(&self) -> Result<Vec<(Identifier, Cursor<Address>)>> {
         self.user.fetch_state()
     }
 
@@ -131,7 +132,7 @@ impl<Trans> User<Trans> {
     ///
     ///   # Arguments
     ///   * `branching` - Boolean representing the sequencing nature of the channel
-    pub fn gen_next_msg_ids(&mut self, branching: bool) -> Vec<(PublicKey, Cursor<Address>)> {
+    pub fn gen_next_msg_ids(&mut self, branching: bool) -> Vec<(Identifier, Cursor<Address>)> {
         self.user.gen_next_msg_ids(branching)
     }
 
@@ -155,15 +156,15 @@ impl<Trans> User<Trans> {
         })
     }
 
-    pub fn store_psk(&mut self, pskid: PskId, psk: Psk) {
-        self.user.store_psk(pskid, psk)
+    pub fn store_psk(&mut self, pskid: PskId, psk: Psk, use_psk: bool) -> Result<()> {
+        self.user.store_psk(pskid, psk, use_psk)
     }
 
     /// Consume a binary sequence message and return the derived message link
     fn process_sequence(&mut self, msg: BinaryMessage, store: bool) -> Result<Address> {
         let unwrapped = self.user.handle_sequence(msg, MsgInfo::Sequence, store)?;
         let msg_link = self.user.link_gen.link_from(
-            &unwrapped.body.pk,
+            &unwrapped.body.id,
             Cursor::new_at(&unwrapped.body.ref_link, 0, unwrapped.body.seq_num.0 as u32),
         );
         Ok(msg_link)
@@ -268,7 +269,7 @@ impl<Trans: Transport + Clone> User<Trans> {
         &mut self,
         link_to: &Address,
         psk_ids: &PskIds,
-        ke_pks: &Vec<PublicKey>,
+        ke_pks: &Vec<&Identifier>,
     ) -> Result<(Address, Option<Address>)> {
         let msg = self.user.share_keyload(link_to, psk_ids, ke_pks)?;
         self.send_message_sequenced(msg, link_to.rel(), MsgInfo::Keyload)
@@ -303,7 +304,7 @@ impl<Trans: Transport + Clone> User<Trans> {
         if let Some(_addr) = &self.user.appinst {
             let seq_msg = self.user.handle_sequence(msg.binary, MsgInfo::Sequence, true)?.body;
             let msg_id = self.user.link_gen.link_from(
-                &seq_msg.pk,
+                &seq_msg.id,
                 Cursor::new_at(&seq_msg.ref_link, 0, seq_msg.seq_num.0 as u32),
             );
 
@@ -602,7 +603,7 @@ impl<Trans: Transport + Clone> User<Trans> {
         &mut self,
         link_to: &Address,
         psk_ids: &PskIds,
-        ke_pks: &Vec<PublicKey>,
+        ke_pks: &Vec<&Identifier>,
     ) -> Result<(Address, Option<Address>)> {
         let msg = self.user.share_keyload(link_to, psk_ids, ke_pks)?;
         self.send_message_sequenced(msg, link_to.rel(), MsgInfo::Keyload).await
@@ -637,7 +638,7 @@ impl<Trans: Transport + Clone> User<Trans> {
         if let Some(_addr) = &self.user.appinst {
             let seq_msg = self.user.handle_sequence(msg.binary, MsgInfo::Sequence, true)?.body;
             let msg_id = self.user.link_gen.link_from(
-                &seq_msg.pk,
+                &seq_msg.id,
                 Cursor::new_at(&seq_msg.ref_link, 0, seq_msg.seq_num.0 as u32),
             );
 
