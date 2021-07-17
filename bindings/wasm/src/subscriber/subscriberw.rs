@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 use crate::{
     types::*,
     user::userw::*,
+    wait,
 };
 
 use core::cell::RefCell;
@@ -60,6 +61,30 @@ impl Subscriber {
             |v| {
                 Ok(Subscriber {
                     subscriber: Rc::new(RefCell::new(v)),
+                })
+            },
+        )
+    }
+
+    #[wasm_bindgen(catch)]
+    pub async fn recover(seed: String, ann_address: Address, options: SendOptions) -> Result<Subscriber> {
+        let mut client = ApiClient::new_from_url(&options.url());
+        client.set_send_options(options.into());
+        let transport = Rc::new(RefCell::new(client));
+
+        ApiSubscriber::recover(
+            &seed,
+            &ann_address
+                .try_into()
+                .map_or_else(|_err| ApiAddress::default(), |addr| addr),
+            transport,
+        )
+        .await
+        .map_or_else(
+            |err| Err(JsValue::from_str(&err.to_string())),
+            |sub| {
+                Ok(Subscriber {
+                    subscriber: Rc::new(RefCell::new(sub)),
                 })
             },
         )
@@ -353,5 +378,17 @@ impl Subscriber {
                     Ok(responses.into_iter().map(JsValue::from).collect())
                 },
             )
+    }
+
+    #[wasm_bindgen(catch)]
+    pub async fn listen(self) -> Result<Array> {
+        loop {
+            let msgs = self.subscriber.borrow_mut().fetch_next_msgs().await;
+            if !msgs.is_empty() {
+                let payloads = get_message_contents(msgs);
+                return Ok(payloads.into_iter().map(JsValue::from).collect());
+            }
+            wait(TIMEOUT).await?;
+        }
     }
 }
